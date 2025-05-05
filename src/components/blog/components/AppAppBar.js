@@ -81,19 +81,11 @@ export default function AppAppBar() {
                                 onClose={handleCloseMenu}
                                 menuItems={[{label: "Team management", path: '/team'}, {label: "Tournaments", path: '/tournament'}]}
                             />
-                            <BasicMenu
-                                title="Solutions"
-                                menuId="solutions"
-                                openMenu={openMenu}
-                                onOpen={handleOpenMenu}
-                                onClose={handleCloseMenu}
-                                menuItems={[
-                                    {label: "Consulting"}, {label: "Development"}, {label: "Support"},
-                                    {label: "Training"}, {label: "AI Solutions"}
-                                ]}
-                            />
                             <Button component={Link} to="/" variant="text" color="info" size="small">
                                 <strong>Blog</strong>
+                            </Button>
+                            <Button variant="text" color="info" size="small">
+                                <strong>Upcoming events</strong>
                             </Button>
                             <Button variant="text" color="info" size="small">
                                 <strong>Highlights</strong>
@@ -101,10 +93,10 @@ export default function AppAppBar() {
                             <Button component={Link} to="/pricing" variant="text" color="info" size="small">
                                 <strong>Pricing</strong>
                             </Button>
-                            <Button variant="text" color="info" size="small" sx={{minWidth: 0}}>
+                            <Button component={Link} to="/faq" variant="text" color="info" size="small" sx={{minWidth: 0}}>
                                 <strong>FAQ</strong>
                             </Button>
-                            <Button variant="text" color="info" size="small" sx={{minWidth: 0}}>
+                            <Button component={Link} to="/reviews" variant="text" color="info" size="small" sx={{minWidth: 0}}>
                                 <strong>Reviews</strong>
                             </Button>
                         </Box>
@@ -112,7 +104,10 @@ export default function AppAppBar() {
 
                     {isAuthenticated
                         ? (<>
-                            <AccountMenu/>
+                            <AccountMenu
+                                username="Иван Иванов"
+                                avatar_url="https://example.com/avatars/ivan.jpg"
+                            />
                         </>)
                         : (<>
                             <Button component={Link} to="/signin" color="primary" size="small">

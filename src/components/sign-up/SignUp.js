@@ -40,7 +40,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-    height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
+    // height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
     minHeight: '100%',
     padding: theme.spacing(2),
     [theme.breakpoints.up('sm')]: {
@@ -158,164 +158,195 @@ export default function SignUp(props) {
         }
     };
 
-
-
     return (
         <AppTheme {...props}>
             <CssBaseline enableColorScheme />
-            <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
-            <SignUpContainer direction="column" justifyContent="space-between"
-                             sx={{
-                                height: '100vh',
-                                overflow: 'hidden',
-                             }}
+            {/* Переключатель темы будет виден всегда */}
+            <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1100 }} />
+
+            {/* Обёртка на всю страницу с естественным скроллом */}
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    // Убедимся, что содержимое не перекрывается
+                    boxSizing: 'border-box',
+                    // Небольшой отступ со всех сторон
+                    padding: { xs: '1rem', sm: '2rem' },
+                }}
             >
-                <Card variant="outlined"
-                      sx={{
-                          overflow: 'auto',
-                          maxHeight: '90vh',
-                          flexGrow: 1,
-                      }}
+                <SignUpContainer
+                    direction="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    sx={{
+                        width: '100%',
+                        flexGrow: 1,
+                    }}
                 >
-                    <Typography
-                        component="h1"
-                        variant="h4"
+                    <Card
+                        variant="outlined"
                         sx={{
                             width: '100%',
-                            fontSize: 'clamp(2rem, 10vw, 2.15rem)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
+                            maxWidth: '500px',
+                            // Достаточный отступ внутри карточки
+                            padding: { xs: '1.5rem', sm: '2rem' },
+                            // Стиль тени для лучшего визуального восприятия
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                         }}
                     >
-                        Sign up <SitemarkIcon />
-                    </Typography>
-
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-                    >
-                        <FormControl>
-                            <FormLabel htmlFor="firstName">Full name</FormLabel>
-                            <TextField
-                                autoComplete="firstName"
-                                name="firstName"
-                                required
-                                fullWidth
-                                id="firstName"
-                                placeholder="Jon"
-                                error={nameError}
-                                helperText={nameErrorMessage}
-                                color={nameError ? 'error' : 'primary'}
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="lastName">Last name</FormLabel>
-                            <TextField
-                                autoComplete="firstName"
-                                name="lastName"
-                                required
-                                fullWidth
-                                id="lastName"
-                                placeholder="Snow"
-                                error={nameError}
-                                helperText={nameErrorMessage}
-                                color={nameError ? 'error' : 'primary'}
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="userLogin">Login</FormLabel>
-                            <TextField
-                                autoComplete="userLogin"
-                                name="userLogin"
-                                required
-                                fullWidth
-                                id="userLogin"
-                                placeholder="john snow 2004"
-                                error={nameError}
-                                helperText={nameErrorMessage}
-                                color={nameError ? 'error' : 'primary'}
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="userPassword">Password</FormLabel>
-                            <TextField
-                                required
-                                fullWidth
-                                name="userPassword"
-                                placeholder="********"
-                                type="password"
-                                id="userPassword"
-                                autoComplete="new-password"
-                                variant="outlined"
-                                error={passwordError}
-                                helperText={passwordErrorMessage}
-                                color={passwordError ? 'error' : 'primary'}
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <FormLabel htmlFor="email">Email</FormLabel>
-                            <TextField
-                                required
-                                fullWidth
-                                id="email"
-                                placeholder="your@email.com"
-                                name="email"
-                                autoComplete="email"
-                                variant="outlined"
-                                error={emailError}
-                                helperText={emailErrorMessage}
-                                color={passwordError ? 'error' : 'primary'}
-                            />
-                        </FormControl>
-                        <FormControlLabel
-                            control={<Checkbox value="allowExtraEmails" color="primary" />}
-                            label="I want to receive updates via email."
-                        />
-                        <Button type="submit" fullWidth variant="contained">
-                            Sign up
-                        </Button>
-
-                    </Box>
-                    <Divider>
-                        <Typography sx={{ color: 'text.secondary' }}>or</Typography>
-                    </Divider>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => alert('Sign up with Google')}
-                            startIcon={<GoogleIcon />}
+                        <Typography
+                            component="h1"
+                            variant="h4"
+                            sx={{
+                                width: '100%',
+                                fontSize: 'clamp(1.75rem, 5vw, 2.15rem)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                mb: 3, // Отступ после заголовка
+                            }}
                         >
-                            Sign up with Google
-                        </Button>
-                        <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => alert('Sign up with Facebook')}
-                            startIcon={<FacebookIcon />}
-                        >
-                            Sign up with Facebook
-                        </Button>
-                        <Typography sx={{ textAlign: 'center' }}>
-                            Already have an account?{' '}
-                            <Link
-                                href="/signin/"
-                                variant="body2"
-                                sx={{ alignSelf: 'center' }}
-                            >
-                                Sign in
-                            </Link>
+                            Sign up <SitemarkIcon />
                         </Typography>
-                    </Box>
-                    <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
-                        <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: "100%" }}>
-                            {alertMessage}
-                        </Alert>
-                    </Snackbar>
-                </Card>
-            </SignUpContainer>
+
+                        <Box
+                            component="form"
+                            onSubmit={handleSubmit}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2.5, // Увеличен интервал между полями
+                            }}
+                        >
+                            <FormControl>
+                                <FormLabel htmlFor="firstName">Full name</FormLabel>
+                                <TextField
+                                    autoComplete="firstName"
+                                    name="firstName"
+                                    required
+                                    fullWidth
+                                    id="firstName"
+                                    placeholder="Jon"
+                                    error={nameError}
+                                    helperText={nameErrorMessage}
+                                    color={nameError ? 'error' : 'primary'}
+                                />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="lastName">Last name</FormLabel>
+                                <TextField
+                                    autoComplete="firstName"
+                                    name="lastName"
+                                    required
+                                    fullWidth
+                                    id="lastName"
+                                    placeholder="Snow"
+                                    error={nameError}
+                                    helperText={nameErrorMessage}
+                                    color={nameError ? 'error' : 'primary'}
+                                />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="userLogin">Login</FormLabel>
+                                <TextField
+                                    autoComplete="userLogin"
+                                    name="userLogin"
+                                    required
+                                    fullWidth
+                                    id="userLogin"
+                                    placeholder="john snow 2004"
+                                    error={nameError}
+                                    helperText={nameErrorMessage}
+                                    color={nameError ? 'error' : 'primary'}
+                                />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="userPassword">Password</FormLabel>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    name="userPassword"
+                                    placeholder="********"
+                                    type="password"
+                                    id="userPassword"
+                                    autoComplete="new-password"
+                                    variant="outlined"
+                                    error={passwordError}
+                                    helperText={passwordErrorMessage}
+                                    color={passwordError ? 'error' : 'primary'}
+                                />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel htmlFor="email">Email</FormLabel>
+                                <TextField
+                                    required
+                                    fullWidth
+                                    id="email"
+                                    placeholder="your@email.com"
+                                    name="email"
+                                    autoComplete="email"
+                                    variant="outlined"
+                                    error={emailError}
+                                    helperText={emailErrorMessage}
+                                    color={passwordError ? 'error' : 'primary'}
+                                />
+                            </FormControl>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                size="large"
+                                sx={{ mt: 1 }}
+                            >
+                                Sign up
+                            </Button>
+                        </Box>
+
+                        {/*<Divider sx={{ my: 3 }}>
+                            <Typography sx={{ color: 'text.secondary' }}>or</Typography>
+                        </Divider>*/}
+
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {/*    <Button*/}
+                        {/*        fullWidth*/}
+                        {/*        variant="outlined"*/}
+                        {/*        onClick={() => alert('Sign up with Google')}*/}
+                        {/*        startIcon={<GoogleIcon />}*/}
+                        {/*        size="large"*/}
+                        {/*    >*/}
+                        {/*        Sign up with Google*/}
+                        {/*    </Button>*/}
+                        {/*    <Button*/}
+                        {/*        fullWidth*/}
+                        {/*        variant="outlined"*/}
+                        {/*        onClick={() => alert('Sign up with Facebook')}*/}
+                        {/*        startIcon={<FacebookIcon />}*/}
+                        {/*        size="large"*/}
+                        {/*    >*/}
+                        {/*        Sign up with Facebook*/}
+                        {/*    </Button>*/}
+                            <Typography sx={{ textAlign: 'center', mt: 2 }}>
+                                Already have an account?{' '}
+                                <Link
+                                    href="/signin/"
+                                    variant="body2"
+                                    sx={{ fontWeight: 500 }}
+                                >
+                                    Sign in
+                                </Link>
+                            </Typography>
+                        </Box>
+                    </Card>
+                </SignUpContainer>
+            </Box>
+
+            {/* Снэкбар вынесен за пределы карточки, чтобы он не влиял на скролл */}
+            <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
+                <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: "100%" }}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </AppTheme>
     );
 }

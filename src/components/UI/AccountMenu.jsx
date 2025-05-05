@@ -12,7 +12,7 @@ import Logout from '@mui/icons-material/Logout';
 import { useNavigate  } from 'react-router-dom';
 import useApplicationStore from "../utils/store/store";
 
-export default function AccountMenu() {
+export default function AccountMenu({ username = 'User', avatar_url = '' }) {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
     const { logOut } = useApplicationStore();
@@ -26,8 +26,18 @@ export default function AccountMenu() {
         setAnchorEl(null);
     };
 
+    const handleProfile = () => {
+        setAnchorEl(null);
+        setTimeout(() => navigate("/profile"), 1000);
+    };
+
+    const handleContacts = () => {
+        setAnchorEl(null);
+        setTimeout(() => navigate("/contacts"), 1000);
+    }
+
     const handleLogout = () => {
-        //TODO убрать local
+        //TODO пїЅпїЅпїЅпїЅпїЅпїЅ local
         localStorage.removeItem('jwt');
         logOut()
         setAnchorEl(null);
@@ -38,15 +48,13 @@ export default function AccountMenu() {
         <React.Fragment>
             <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
                 <Tooltip title="Account settings">
-                    <IconButton
-                        onClick={handleClick}
-                        size="small"
-                        sx={{ ml: 2 }}
-                        aria-controls={open ? 'account-menu' : undefined}
-                        aria-haspopup="true"
-                        aria-expanded={open ? 'true' : undefined}
-                    >
-                        <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+                    <IconButton onClick={handleClick} size="small" sx={{ ml: 2 }}>
+                        <Avatar
+                            sx={{ width: 40, height: 40 }}
+                            src={avatar_url || undefined}
+                        >
+                            {!avatar_url && username[0]?.toUpperCase()}
+                        </Avatar>
                     </IconButton>
                 </Tooltip>
             </Box>
@@ -87,11 +95,11 @@ export default function AccountMenu() {
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={handleProfile}>
                     <Avatar /> Profile
                 </MenuItem>
-                <MenuItem onClick={handleClose}>
-                    <Avatar /> My account
+                <MenuItem onClick={handleContacts}>
+                    <Avatar /> Contacts
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={handleClose}>

@@ -6,7 +6,7 @@ export default function BasicMenu({ title, menuId, openMenu, onOpen, onClose, me
     const anchorRef = React.useRef(null);
     const isOpen = openMenu === menuId;
     const closeTimeout = React.useRef(null);
-    const navigate = useNavigate(); // Используем React Router для навигации
+    const navigate = useNavigate();
 
     const handleMouseEnter = (event) => {
         clearTimeout(closeTimeout.current);
@@ -20,9 +20,9 @@ export default function BasicMenu({ title, menuId, openMenu, onOpen, onClose, me
     };
 
     const handleMenuItemClick = (path) => {
-        onClose(); // Закрытие меню
+        onClose();
         if (path) {
-            navigate(path); // Используем маршрутизацию SPA
+            navigate(path);
         }
     };
 

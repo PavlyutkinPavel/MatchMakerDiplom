@@ -31,16 +31,22 @@ import {
     SportsSoccer as SportsSoccerIcon,
     Home as HomeIcon
 } from "@mui/icons-material";
+import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
+import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
+import SportsIcon from '@mui/icons-material/Sports';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import CssBaseline from "@mui/material/CssBaseline";
 import AppTheme from "../../shared-theme/AppTheme";
 import {useNavigate} from "react-router-dom";
 import countries from "../../../data/countries";
+import EmailIcon from "@mui/icons-material/Email";
 
 const routes = {
     team: "/team",
     notes: "/notes",
     map: "/map",
+    events: "/events",
     message: "/message",
     dashboard: "/dashboard",
     orders: "/orders",
@@ -245,27 +251,6 @@ const getHeaders = () => ({
 
 const countryNames = countries.map(country => country.name);
 
-// Функция для получения списка городов из Oxilor Data API
-async function fetchCitiesFromOxilor() {
-    const apiURL = 'https://data-api.oxilor.com/rest';
-    const token = 'OhJeadqJZNTjVN7obZao3Dd-SeFHk1'; // Замените на ваш токен
-
-    const options = {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    };
-
-    const response = await fetch(apiURL, options);
-    if (!response.ok) {
-        throw new Error('Ошибка при загрузке городов из Oxilor API');
-    }
-
-    const data = await response.json();
-    return data.cities.map(city => city.name); // Преобразуем данные в массив названий городов
-}
-
 export const teamDataSource = {
     fields: [
         { field: 'id', headerName: 'ID', flex: 0, minWidth: 0, maxWidth: 0},
@@ -388,7 +373,7 @@ export const teamDataSource = {
 
 const notesCache = new DataSourceCache();
 
-function CrudAdvanced(props) {
+function TeamManagementCrudAdvanced(props) {
     const { window } = props;
 
     const demoWindow = window !== undefined ? window() : undefined;
@@ -437,6 +422,21 @@ function CrudAdvanced(props) {
         setPopoverAnchorEl(null);
     };
 
+    const [popoverChatAnchorEl, setPopoverChatAnchorEl] = React.useState(null);
+
+    const isPopoverChatOpen = Boolean(popoverChatAnchorEl);
+    const popoverChatId = isPopoverChatOpen ? 'simple-popover' : undefined;
+
+    const handleChatPopoverButtonClick = (event) => {
+        event.stopPropagation();
+        setPopoverChatAnchorEl(event.currentTarget);
+    };
+
+    const handleChatPopoverClose = (event) => {
+        event.stopPropagation();
+        setPopoverChatAnchorEl(null);
+    };
+
     const popoverMenuAction = (
         <React.Fragment>
             <IconButton aria-describedby={popoverId} onClick={handlePopoverButtonClick}>
@@ -460,25 +460,67 @@ function CrudAdvanced(props) {
         </React.Fragment>
     );
 
+    const popoverChatMenuAction = (
+        <React.Fragment>
+            <IconButton aria-describedby={popoverChatId} onClick={handleChatPopoverButtonClick}>
+                <MoreHorizIcon/>
+            </IconButton>
+            <Menu
+                id={popoverChatId}
+                open={isPopoverChatOpen}
+                anchorEl={popoverChatAnchorEl}
+                onClose={handleChatPopoverClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                disableAutoFocus
+                disableAutoFocusItem
+            >
+                <MenuItem onClick={handleChatPopoverClose}>New chat</MenuItem>
+            </Menu>
+        </React.Fragment>
+    );
+
     return (
         <AppTheme {...props}>
             <CssBaseline enableColorScheme />
             <AppProvider
                 navigation={[
                     {
-                        kind: 'header', title: 'Main items',
+                        kind: 'header', title: 'Main features',
                     },
                     {
-                        segment: 'notes', title: 'Notes', icon: <ChecklistIcon />, pattern: 'notes{/:noteId}*',
+                        segment: 'notes', title: 'Planning', icon: <ChecklistIcon />, pattern: 'notes{/:noteId}*',
                     },
                     {
                         segment: 'integrations', title: 'Team', icon: <SportsSoccerIcon />,
                     },
                     {
-                        segment: 'dashboard', title: 'Dashboard', icon: <DashboardIcon />, pattern: 'dashboard{/:noteId}*',
+                        segment: 'members', title: 'Members', icon: <EmojiPeopleIcon />, pattern: 'dashboard{/:noteId}*',
+                        children: [
+                            {
+                                segment: 'players', title: 'Players', icon: <SportsKabaddiIcon />,
+                            },
+                            {
+                                segment: 'table', title: 'Coaches/Personal', icon: <SportsIcon />,
+                            },
+                        ],
                     },
                     {
-                        segment: 'orders', title: 'Orders', icon: <ShoppingCartIcon />,
+                        segment: 'friends', title: 'Friends', icon: <PersonIcon />, action: <Chip label={7} color="primary" size="small" />,
+                    },
+                    {
+                        segment: 'messages', title: 'Emails', icon: <EmailIcon />, action: popoverMenuAction, children: MESSAGES_NAVIGATION,
+                    },
+                    {
+                        segment: 'messages', title: 'Chat', icon: <MessageIcon />,
+                    },
+                    {
+                        segment: 'events', title: 'Team Events', icon: <FitnessCenterIcon />,
+                    },
+                    {
+                        segment: 'map', title: 'Events Map', icon: <MapIcon />,
                     },
                     {
                         kind: 'divider',
@@ -496,15 +538,6 @@ function CrudAdvanced(props) {
                                 segment: 'table', title: 'Table', icon: <DescriptionIcon />,
                             },
                         ],
-                    },
-                    {
-                        segment: 'friends', title: 'Friends', icon: <PersonIcon />, action: <Chip label={7} color="primary" size="small" />,
-                    },
-                    {
-                        segment: 'messages', title: 'Messages', icon: <MessageIcon />, action: popoverMenuAction, children: MESSAGES_NAVIGATION,
-                    },
-                    {
-                        segment: 'map', title: 'Map', icon: <MapIcon />,
                     },
                 ]
                 }
@@ -561,8 +594,8 @@ function CrudAdvanced(props) {
     );
 }
 
-CrudAdvanced.propTypes = {
+TeamManagementCrudAdvanced.propTypes = {
     window: PropTypes.func,
 };
 
-export default CrudAdvanced;
+export default TeamManagementCrudAdvanced;

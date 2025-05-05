@@ -36,7 +36,7 @@ function ForgotPassword({ open, handleClose, handleForgotPassword }) {
             slotProps={{
                 paper: {
                     component: 'form',
-                    onSubmit: handleSubmit,
+                    // onSubmit: handleSubmit,
                     sx: { backgroundImage: 'none' },
                 },
             }}
@@ -65,7 +65,7 @@ function ForgotPassword({ open, handleClose, handleForgotPassword }) {
             </DialogContent>
             <DialogActions sx={{ pb: 3, px: 3 }}>
                 <Button onClick={handleClose}>Cancel</Button>
-                <Button variant="contained" type="submit">
+                <Button variant="contained" onClick={handleSubmit}>
                     Continue
                 </Button>
             </DialogActions>

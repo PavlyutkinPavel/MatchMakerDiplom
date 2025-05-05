@@ -265,8 +265,8 @@ export default function SignInCard() {
           </span>
                 </Typography>
             </Box>
-            <Divider>or</Divider>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {/*<Divider>or</Divider>*/}
+            {/*<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Button
                     fullWidth
                     variant="outlined"
@@ -283,8 +283,8 @@ export default function SignInCard() {
                 >
                     Sign in with Facebook
                 </Button>
-            </Box>
-            {/* Alert уведомление */}
+            </Box>*/}
+            {/* Alert пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */}
             <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
                 <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
                     <Alert
