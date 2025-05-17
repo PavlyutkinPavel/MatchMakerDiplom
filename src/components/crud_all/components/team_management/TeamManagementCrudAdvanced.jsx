@@ -1,10 +1,8 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import logo from "../../../assets/img/logo.png";
 import { createTheme } from '@mui/material/styles';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { PageContainer } from '@toolpad/core/PageContainer';
 import CrudRoutes from "./CrudRoutes";
 
 import {
@@ -15,60 +13,49 @@ import {
     IconButton,
     Menu,
     MenuItem,
-    Chip,
+    Chip, Typography, Grid, Box, Container,
 } from "@mui/material";
 import {
-    Dashboard as DashboardIcon,
-    ShoppingCart as ShoppingCartIcon,
     BarChart as BarChartIcon,
-    Description as DescriptionIcon,
     Person as PersonIcon,
     Message as MessageIcon,
     Map as MapIcon,
-    CallMade as CallMadeIcon,
-    CallReceived as CallReceivedIcon,
     MoreHoriz as MoreHorizIcon,
     SportsSoccer as SportsSoccerIcon,
     Home as HomeIcon
 } from "@mui/icons-material";
 import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
-import SportsKabaddiIcon from '@mui/icons-material/SportsKabaddi';
-import SportsIcon from '@mui/icons-material/Sports';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import CssBaseline from "@mui/material/CssBaseline";
-import AppTheme from "../../shared-theme/AppTheme";
+import AppTheme from "../../../shared-theme/AppTheme";
 import {useNavigate} from "react-router-dom";
-import countries from "../../../data/countries";
 import EmailIcon from "@mui/icons-material/Email";
+import TeamManagementModern from "./TeamManagementModern";
+import {motion} from "framer-motion";
+import Avatar from "@mui/material/Avatar";
+import FriendsList from "./components/FriendList";
+import {TeamEvents} from "./components/TeamEvents";
+import Chat from "./components/Chat";
+import Emails from "./components/Emails";
+import ParticipantsManager from "./components/ParticipantsManager";
+import SportsStatistics from "./components/SportsStatistics";
 
 const routes = {
     team: "/team",
-    notes: "/notes",
+    planning: "/planning",
     map: "/map",
     events: "/events",
     message: "/message",
+    emails: "/emails",
+    chat:"chat",
+    members: "/members",
     dashboard: "/dashboard",
     orders: "/orders",
-    reports: "/reports",
-    integrations: "/integrations",
+    statistics: "/statistics",
+    teams: "/teams",
     friends: "/friends",
 };
-
-const MESSAGES_NAVIGATION = [
-    {
-        segment: 'sent',
-        title: 'Sent',
-        icon: <CallMadeIcon />,
-        action: <Chip label={12} color="success" size="small" />,
-    },
-    {
-        segment: 'received',
-        title: 'Received',
-        icon: <CallReceivedIcon />,
-        action: <Chip label={4} color="error" size="small" />,
-    },
-];
 
 const demoTheme = createTheme({
     cssVariables: {
@@ -87,8 +74,8 @@ const demoTheme = createTheme({
 });
 
 let notesStore = [
-    { id: 1, title: 'Grocery List Item', text: 'Buy more coffee.' },
-    { id: 2, title: 'Personal Goal', text: 'Finish reading the book.' },
+    { id: 1, title: 'Training session', text: 'Try new formation.' },
+    { id: 2, title: 'Personal Goal', text: 'Finish running marathon in 15 minutes' },
 ];
 
 export const notesDataSource = {
@@ -242,133 +229,7 @@ export const notesDataSource = {
     },
 };
 
-const API_URL = "http://localhost:8080/team";
 
-const getHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("jwt")}`,
-});
-
-const countryNames = countries.map(country => country.name);
-
-export const teamDataSource = {
-    fields: [
-        { field: 'id', headerName: 'ID', flex: 0, minWidth: 0, maxWidth: 0},
-        { field: 'teamName', headerName: 'Team name', flex: 1 },
-        {
-            field: 'teamType',
-            headerName: 'Sport Type',
-            flex: 1,
-            type: 'singleSelect',
-            valueOptions: ['FOOTBALL', 'BASKETBALL', 'TENNIS', 'HOCKEY', 'VOLLEYBALL']
-        },
-        {
-            field: 'status',
-            headerName: 'Status',
-            flex: 1,
-            type: 'singleSelect',
-            valueOptions: ['Active team', 'Inactive team']
-        },
-        {
-            field: 'country',
-            headerName: 'Country',
-            flex: 1,
-            type: 'singleSelect',
-            valueOptions: countryNames
-        },
-        { field: 'city', headerName: 'City', flex: 1 },
-        { field: 'achievements', headerName: 'Achievements', flex: 1 },
-        { field: 'wins', headerName: 'Wins', flex: 1 },
-
-    ],
-    getMany: async ({ paginationModel }) => {
-        const { page, pageSize } = paginationModel;
-        try {
-            const response = await fetch(API_URL, {
-                method: "GET",
-                headers: getHeaders(),
-            });
-            const teams = await response.json();
-            return {
-                items: teams.slice(page * pageSize, (page + 1) * pageSize),
-                itemCount: teams.length,
-            };
-        } catch (error) {
-            console.error("Error fetching teams:", error);
-            return { items: [], itemCount: 0 };
-        }
-    },
-    getOne: async (teamId) => {
-        try {
-            const response = await fetch(`${API_URL}/${teamId}`, {
-                method: "GET",
-                headers: getHeaders(),
-            });
-            return await response.json();
-        } catch (error) {
-            console.error("Error fetching team:", error);
-            throw new Error("Team not found");
-        }
-    },
-    createOne: async (data) => {
-        try {
-            console.log(data)
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: getHeaders(),
-                body: JSON.stringify(data),
-            });
-            console.log("RESP: " + response.status)
-            if (response.status === 201) {
-                return response.status;
-            }
-        } catch (error) {
-            console.error("Error creating team:", error);
-            throw new Error("Failed to create team");
-        }
-    },
-    updateOne: async (teamId, data) => {
-        try {
-            console.log(data)
-            const response = await fetch(API_URL, {
-                method: "PUT",
-                headers: getHeaders(),
-                body: JSON.stringify(data),
-            });
-            console.log("RESP: " + response.status)
-            if (response.status === 204) {
-                return response.status;
-            }
-        } catch (error) {
-            console.error("Error updating team:", error);
-            throw new Error("Failed to update team");
-        }
-    },
-    deleteOne: async (teamId) => {
-        try {
-            await fetch(`${API_URL}/${teamId}`, {
-                method: "DELETE",
-                headers: getHeaders(),
-            });
-        } catch (error) {
-            console.error("Error deleting team:", error);
-            throw new Error("Failed to delete team");
-        }
-    },
-    validate: (formValues) => {
-        let issues = [];
-        if (!formValues.teamName) {
-            issues.push({ message: "Team name is required", path: ["teamName"] });
-        }
-        if (formValues.teamName && formValues.teamName.length < 3) {
-            issues.push({ message: "Team name must be at least 3 characters long", path: ["teamName"] });
-        }
-        if (!formValues.country) {
-            issues.push({ message: "Country is required", path: ["country"] });
-        }
-        return { issues };
-    },
-};
 
 
 const notesCache = new DataSourceCache();
@@ -384,28 +245,7 @@ function TeamManagementCrudAdvanced(props) {
         navigate("/");
     };
 
-
     const router = useDemoRouter(routes.team);
-
-    const demoSession = {
-        user: {
-            name: 'Pavel Pavlyutlin',
-            email: 'pashanpmrp200431.com',
-            image: 'https://avatars.githubusercontent.com/u/93840829?s=400&u=28e4d63cd91110e4b3fa12b9ac8a996917f52a1d&v=4',
-        },
-    };
-
-    const [session, setSession] = React.useState(demoSession);
-    const authentication = React.useMemo(() => {
-        return {
-            signIn: () => {
-                setSession(demoSession);
-            },
-            signOut: () => {
-                setSession(null);
-            },
-        };
-    }, []);
 
     const [popoverAnchorEl, setPopoverAnchorEl] = React.useState(null);
 
@@ -460,27 +300,12 @@ function TeamManagementCrudAdvanced(props) {
         </React.Fragment>
     );
 
-    const popoverChatMenuAction = (
-        <React.Fragment>
-            <IconButton aria-describedby={popoverChatId} onClick={handleChatPopoverButtonClick}>
-                <MoreHorizIcon/>
-            </IconButton>
-            <Menu
-                id={popoverChatId}
-                open={isPopoverChatOpen}
-                anchorEl={popoverChatAnchorEl}
-                onClose={handleChatPopoverClose}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                }}
-                disableAutoFocus
-                disableAutoFocusItem
-            >
-                <MenuItem onClick={handleChatPopoverClose}>New chat</MenuItem>
-            </Menu>
-        </React.Fragment>
-    );
+    const steps = [
+        'Create or join a team',
+        'Manage team members',
+        'Invite players and manage events',
+        'Chat, compete and track results',
+    ];
 
     return (
         <AppTheme {...props}>
@@ -491,30 +316,19 @@ function TeamManagementCrudAdvanced(props) {
                         kind: 'header', title: 'Main features',
                     },
                     {
-                        segment: 'notes', title: 'Planning', icon: <ChecklistIcon />, pattern: 'notes{/:noteId}*',
-                    },
-                    {
-                        segment: 'integrations', title: 'Team', icon: <SportsSoccerIcon />,
+                        segment: 'teams', title: 'Team', icon: <SportsSoccerIcon />,
                     },
                     {
                         segment: 'members', title: 'Members', icon: <EmojiPeopleIcon />, pattern: 'dashboard{/:noteId}*',
-                        children: [
-                            {
-                                segment: 'players', title: 'Players', icon: <SportsKabaddiIcon />,
-                            },
-                            {
-                                segment: 'table', title: 'Coaches/Personal', icon: <SportsIcon />,
-                            },
-                        ],
                     },
                     {
-                        segment: 'friends', title: 'Friends', icon: <PersonIcon />, action: <Chip label={7} color="primary" size="small" />,
+                        segment: 'friends', title: 'Friends', icon: <PersonIcon />, action: <Chip label={3} color="primary" size="small" />,
                     },
                     {
-                        segment: 'messages', title: 'Emails', icon: <EmailIcon />, action: popoverMenuAction, children: MESSAGES_NAVIGATION,
+                        segment: 'emails', title: 'Emails', icon: <EmailIcon />
                     },
                     {
-                        segment: 'messages', title: 'Chat', icon: <MessageIcon />,
+                        segment: 'chat', title: 'Chat', icon: <MessageIcon />,
                     },
                     {
                         segment: 'events', title: 'Team Events', icon: <FitnessCenterIcon />,
@@ -526,30 +340,22 @@ function TeamManagementCrudAdvanced(props) {
                         kind: 'divider',
                     },
                     {
-                        kind: 'header', title: 'Analytics',
+                        kind: 'header', title: 'Analytics & Tools',
                     },
                     {
-                        segment: 'reports', title: 'Reports', icon: <BarChartIcon />,
-                        children: [
-                            {
-                                segment: 'statistics', title: 'Stats', icon: <DescriptionIcon />,
-                            },
-                            {
-                                segment: 'table', title: 'Table', icon: <DescriptionIcon />,
-                            },
-                        ],
+                        segment: 'planning', title: 'Planning', icon: <ChecklistIcon />, pattern: 'notes{/:noteId}*',
+                    },
+                    {
+                        segment: 'statistics', title: 'Statistics', icon: <BarChartIcon />,
                     },
                 ]
                 }
                 router={router}
                 theme={demoTheme}
                 window={demoWindow}
-                authentication={authentication}
-                session={session}
                 branding={{
                     logo: (
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            {/*<img src={logo} alt="MatchMaker logo" />*/}
                             <IconButton onClick={handleGoHome} color="primary">
                                 <HomeIcon />
                             </IconButton>
@@ -560,7 +366,67 @@ function TeamManagementCrudAdvanced(props) {
                 }}
             >
                 <DashboardLayout>
-                    <PageContainer>
+                    {router.pathname === "/team" && (
+                        <Container sx={{py: 8}}>
+                            <motion.div
+                                initial={{opacity: 0, y: 30}}
+                                whileInView={{opacity: 1, y: 0}}
+                                transition={{duration: 0.8}}
+                                viewport={{once: true}}
+                            >
+                                <Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
+                                    How It Works
+                                </Typography>
+                                <Typography variant="body1" align="center" color="text.secondary" paragraph>
+                                    Organizing and joining teams is easier than ever
+                                </Typography>
+                                <Grid container spacing={4} justifyContent="center" sx={{mt: 4}}>
+                                    {steps.map((label, index) => (
+                                        <Grid item xs={12} sm={6} md={3} key={index}>
+                                            <motion.div
+                                                initial={{opacity: 0, y: 30}}
+                                                whileInView={{opacity: 1, y: 0}}
+                                                viewport={{once: true}}
+                                                transition={{delay: index * 0.2, duration: 0.6}}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        p: 3,
+                                                        borderRadius: 4,
+                                                        bgcolor: 'background.paper',
+                                                        boxShadow: 3,
+                                                        textAlign: 'center',
+                                                        height: '200px',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                    }}
+                                                >
+                                                    <Avatar
+                                                        sx={{
+                                                            bgcolor: 'primary.main',
+                                                            width: 56,
+                                                            height: 56,
+                                                            mb: 2,
+                                                            mx: 'auto',
+                                                            fontWeight: 'bold',
+                                                        }}
+                                                    >
+                                                        {index + 1}
+                                                    </Avatar>
+                                                    <Typography variant="subtitle1" fontWeight="bold" sx={{ flexGrow: 1 }}>
+                                                        {label}
+                                                    </Typography>
+                                                </Box>
+
+                                            </motion.div>
+                                        </Grid>
+                                    ))}
+                                </Grid>
+
+                            </motion.div>
+                        </Container>
+                    )}
+
                         {router.pathname === "/map" && (
                             <iframe
                                 title="Google Map"
@@ -570,24 +436,37 @@ function TeamManagementCrudAdvanced(props) {
                                 loading="lazy"
                             />
                         )}
-                        {router.pathname === "/notes" && (
+                        {router.pathname === "/planning" && (
                             <CrudRoutes
-                                basePath={routes.notes}
+                                basePath={routes.planning}
                                 entityName="Note"
                                 dataSource={notesDataSource}
                                 dataSourceCache={notesCache}
                             />
                         )}
-                        {router.pathname === "/integrations" && (
-                            <CrudRoutes
-                                basePath={routes.integrations}
-                                entityName="Team"
-                                dataSource={teamDataSource}
-                                dataSourceCache={notesCache}
-                            />
+                        {router.pathname === "/teams" && (
+                            <TeamManagementModern/>
+                        )}
+                        {router.pathname === "/members" && (
+                            <ParticipantsManager/>
+                        )}
+                        {router.pathname === "/friends" && (
+                            <FriendsList/>
+                        )}
+                        {router.pathname === "/chat" && (
+                            <Chat/>
+                        )}
+                        {router.pathname === "/events" && (
+                            <TeamEvents/>
+                        )}
+                        {router.pathname === "/emails" && (
+                            <Emails/>
+                        )}
+                        {router.pathname === "/statistics" && (
+                            <SportsStatistics/>
                         )}
 
-                    </PageContainer>
+
                 </DashboardLayout>
             </AppProvider>
         </AppTheme>

@@ -3,23 +3,25 @@ import {BrowserRouter as Router, Route, Routes, useNavigate} from "react-router-
 import SignUp from "./components/sign-up/SignUp";
 import VerificationCodeInput from "./components/sign-up/VerificationCodeInput";
 import SignInSide from "./components/sign-in-side/SignInSide";
-import Pricing from "./components/pricing/Pricing";
+import Pricing from "./components/mainpage/Pricing";
 import ScrollToTop from "./components/UI/ScrollToTop";
-import TeamManagementCrudAdvanced from "./components/crud_all/components/TeamManagementCrudAdvanced";
-import DashboardLayoutAccountSidebar from "./components/crud_all/components/DashboardLayoutBasic";
 import PrivateRoute from "./PrivateRoute";
 import useApplicationStore from "./components/utils/store/store";
 import MatchMaker from "./components/blog/MatchMaker";
 import ResetPassword from "./components/sign-in-side/components/ResetPassword";
 import VerificationCodeInputRq from "./components/sign-up/VerificationCodeInputRq";
-import MatchMakerFAQ from "./components/faq/MatchMakerFAQ";
-import MatchMakerReviews from "./components/reviews/MatchMakerReviews";
+import MatchMakerFAQ from "./components/mainpage/MatchMakerFAQ";
+import MatchMakerReviews from "./components/mainpage/MatchMakerReviews";
 import SportProfile from "./components/profile/SportProfile";
 import ContactsFollowing from "./components/profile/ContactsFollowing";
 import EditProfile from "./components/profile/EditProfile";
 import TournamentEventsManagementCrudAdvanced
-    from "./components/crud_all/components/TournamentEventsManagementCrudAdvanced";
+    from "./components/crud_all/components/tournament_management/TournamentEventsManagementCrudAdvanced";
 import {useEffect} from "react";
+import TeamManagementCrudAdvanced from "./components/crud_all/components/team_management/TeamManagementCrudAdvanced";
+import HomePage from "./components/mainpage/HomePage";
+import UpComingEvents from "./components/mainpage/UpComingEvents";
+import HighLightsList from "./components/mainpage/HighLightsList";
 
 
 function App() {
@@ -43,8 +45,11 @@ function App() {
             <div>
                 <ScrollToTop/>
                 <Routes>
-                    <Route path="/" element={<MatchMaker/>}/>
+                    <Route path="/" element={<HomePage/>}/>
+                    <Route path="/blog" element={<MatchMaker/>}/>
                     <Route path="/pricing" element={<Pricing/>}/>
+                    <Route path="/upcoming_events" element={<UpComingEvents/>}/>
+                    <Route path="/highlights" element={<HighLightsList/>}/>
                     <Route path="/signup" element={<SignUp/>}/>
                     <Route path="/signin" element={<SignInSide/>}/>
                     <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>

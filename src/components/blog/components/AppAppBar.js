@@ -14,7 +14,6 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../../shared-theme/ColorModeIconDropdown';
 import Sitemark from './SitemarkIcon';
 import {Link} from "react-router-dom";
-import BasicMenu from "../../UI/BasicMenu";
 import AccountMenu from "../../UI/AccountMenu";
 import useApplicationStore from "../../utils/store/store";
 
@@ -62,7 +61,6 @@ export default function AppAppBar() {
                 boxShadow: 0,
                 bgcolor: 'transparent',
                 backgroundImage: 'none',
-                mt: 'calc(var(--template-frame-height, 0px) + 28px)',
             }}
             onMouseLeave={handleCloseMenu}
         >
@@ -72,31 +70,226 @@ export default function AppAppBar() {
                         <Button component={Link} to="/" color="primary" sx={{height: '50px'}}>
                             <Sitemark/>
                         </Button>
+
+
                         <Box sx={{display: {xs: 'none', md: 'flex'}}}>
-                            <BasicMenu
-                                title="Quick start"
-                                menuId="start"
-                                openMenu={openMenu}
-                                onOpen={handleOpenMenu}
-                                onClose={handleCloseMenu}
-                                menuItems={[{label: "Team management", path: '/team'}, {label: "Tournaments", path: '/tournament'}]}
-                            />
-                            <Button component={Link} to="/" variant="text" color="info" size="small">
+                            {isAuthenticated
+                                ? (<>
+                                    <Button
+                                        component={Link}
+                                        to="/team"
+                                        variant="text"
+                                        color="info"
+                                        size="small"
+                                        sx={{
+                                            px: 2,
+                                            py: 1,
+                                            mx: 0.5,
+                                            fontWeight: 600,
+                                            position: 'relative',
+                                            transition: 'all 0.3s ease-in-out',
+                                            '&:after': {
+                                                content: '""',
+                                                position: 'absolute',
+                                                bottom: 4,
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                width: 0,
+                                                height: 2,
+                                                bgcolor: 'primary.main',
+                                                transition: 'width 0.3s ease',
+                                            },
+                                            '&:hover:after': {
+                                                width: '60%',
+                                            },
+                                        }}
+                                    >
+                                        Team management
+                                    </Button>
+                                    <Button component={Link} to="/tournament" variant="text" color="info" size="small"
+                                            sx={{
+                                                px: 2,
+                                                py: 1,
+                                                mx: 0.5,
+                                                fontWeight: 600,
+                                                position: 'relative',
+                                                transition: 'all 0.3s ease-in-out',
+                                                '&:after': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    bottom: 4,
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                    width: 0,
+                                                    height: 2,
+                                                    bgcolor: 'primary.main',
+                                                    transition: 'width 0.3s ease',
+                                                },
+                                                '&:hover:after': {
+                                                    width: '60%',
+                                                },
+                                            }}
+                                    >
+                                        <strong>Tournaments</strong>
+                                    </Button>
+                                </>)
+                                : (<>
+                                </>)
+                            }
+                            <Button component={Link} to="/blog" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>Blog</strong>
                             </Button>
-                            <Button variant="text" color="info" size="small">
+                            <Button component={Link} to="/upcoming_events" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>Upcoming events</strong>
                             </Button>
-                            <Button variant="text" color="info" size="small">
+                            <Button component={Link} to="/highlights" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>Highlights</strong>
                             </Button>
-                            <Button component={Link} to="/pricing" variant="text" color="info" size="small">
+                            <Button component={Link} to="/pricing" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>Pricing</strong>
                             </Button>
-                            <Button component={Link} to="/faq" variant="text" color="info" size="small" sx={{minWidth: 0}}>
+                            <Button component={Link} to="/faq" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>FAQ</strong>
                             </Button>
-                            <Button component={Link} to="/reviews" variant="text" color="info" size="small" sx={{minWidth: 0}}>
+                            <Button component={Link} to="/reviews" variant="text" color="info" size="small"
+                                    sx={{
+                                        px: 2,
+                                        py: 1,
+                                        mx: 0.5,
+                                        fontWeight: 600,
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease-in-out',
+                                        '&:after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            width: 0,
+                                            height: 2,
+                                            bgcolor: 'primary.main',
+                                            transition: 'width 0.3s ease',
+                                        },
+                                        '&:hover:after': {
+                                            width: '60%',
+                                        },
+                                    }}
+                            >
                                 <strong>Reviews</strong>
                             </Button>
                         </Box>
@@ -136,13 +329,19 @@ export default function AppAppBar() {
                             anchor="top"
                             open={open}
                             onClose={toggleDrawer(false)}
+                            transitionDuration={500}
                             PaperProps={{
                                 sx: {
-                                    top: 'var(--template-frame-height, 0px)',
+                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                    backdropFilter: 'blur(10px)',
+                                    boxShadow: 3,
+                                    px: 3,
+                                    pt: 2,
                                 },
                             }}
                         >
-                            <Box sx={{p: 2, backgroundColor: 'background.default'}}>
+
+                        <Box sx={{p: 2, backgroundColor: 'background.default'}}>
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -153,19 +352,83 @@ export default function AppAppBar() {
                                         <CloseRoundedIcon/>
                                     </IconButton>
                                 </Box>
-                                <MenuItem>Features</MenuItem>
-                                <MenuItem>Testimonials</MenuItem>
-                                <MenuItem>Highlights</MenuItem>
-                                <MenuItem>Pricing</MenuItem>
-                                <MenuItem>FAQ</MenuItem>
-                                <MenuItem>Blog</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>Features</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>Testimonials</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>Highlights</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>Pricing</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>FAQ</MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>Blog</MenuItem>
                                 <Divider sx={{my: 3}}/>
-                                <MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>
                                     <Button component={Link} to="/signin" color="primary" variant="text" size="small">
                                         Sign in
                                     </Button>
                                 </MenuItem>
-                                <MenuItem>
+                                <MenuItem sx={{
+                                    px: 2,
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    '&:hover': {
+                                        bgcolor: 'primary.light',
+                                        color: 'white',
+                                    },
+                                }}>
                                     <Button component={Link} to="/signup" color="primary" variant="contained"
                                             size="small">
                                         Sign up

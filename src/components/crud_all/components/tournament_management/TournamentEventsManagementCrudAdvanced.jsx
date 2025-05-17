@@ -1,35 +1,30 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import logo from "../../../assets/img/logo.png";
 import { createTheme } from '@mui/material/styles';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import CrudRoutes from "./CrudRoutes";
-import EventManagementComponent from "./EventManagementComponent"; // Import the new component
+import EventManagementComponent from "./EventManagementComponent";
+import BasicEventComponent from "./BasicEvents";
+import TwoSideEventComponent from "./TwoSideEvents";
+import TableTournamentEvents from "./TableTournamentEvents";
+import PlayOffTournamentEvents from "./PlayOffTournamentEvents";
 
-import {
-    DataSourceCache,
-} from '@toolpad/core/Crud';
+
+
 import { useDemoRouter } from '@toolpad/core/internal';
 import {
     IconButton,
-    Menu,
-    MenuItem,
 } from "@mui/material";
 import {
-    BarChart as BarChartIcon,
-    MoreHoriz as MoreHorizIcon,
-    SportsSoccer as SportsSoccerIcon,
     Home as HomeIcon
 } from "@mui/icons-material";
-import ChecklistIcon from '@mui/icons-material/Checklist';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import BackupTableIcon from '@mui/icons-material/BackupTable';
 import Filter2Icon from '@mui/icons-material/Filter2';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import CssBaseline from "@mui/material/CssBaseline";
-import AppTheme from "../../shared-theme/AppTheme";
+import AppTheme from "../../../shared-theme/AppTheme";
 import {useNavigate} from "react-router-dom";
 
 const routes = {
@@ -55,7 +50,6 @@ const demoTheme = createTheme({
     },
 });
 
-const notesCache = new DataSourceCache();
 
 function TournamentEventsManagementCrudAdvanced(props) {
     const { window } = props;
@@ -69,26 +63,6 @@ function TournamentEventsManagementCrudAdvanced(props) {
     };
 
     const router = useDemoRouter(routes.basic); // Set default route to basic
-
-    const demoSession = {
-        user: {
-            name: 'Pavel Pavlyutlin',
-            email: 'pashanpmrp200431.com',
-            image: 'https://avatars.githubusercontent.com/u/93840829?s=400&u=28e4d63cd91110e4b3fa12b9ac8a996917f52a1d&v=4',
-        },
-    };
-
-    const [session, setSession] = React.useState(demoSession);
-    const authentication = React.useMemo(() => {
-        return {
-            signIn: () => {
-                setSession(demoSession);
-            },
-            signOut: () => {
-                setSession(null);
-            },
-        };
-    }, []);
 
     const [popoverAnchorEl, setPopoverAnchorEl] = React.useState(null);
 
@@ -137,8 +111,6 @@ function TournamentEventsManagementCrudAdvanced(props) {
                 router={router}
                 theme={demoTheme}
                 window={demoWindow}
-                authentication={authentication}
-                session={session}
                 branding={{
                     logo: (
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -148,14 +120,24 @@ function TournamentEventsManagementCrudAdvanced(props) {
                             </IconButton>
                         </div>
                     ),
-                    title: 'Team management',
-                    homeUrl: routes.basic, // Changed default route to basic
+                    title: 'Tournament management',
+                    homeUrl: routes.basic,
                 }}
             >
                 <DashboardLayout>
                     <PageContainer>
-                        {/* Render the EventManagementComponent */}
-                        <EventManagementComponent />
+                        {router.pathname === "/basic" && (
+                            <BasicEventComponent/>
+                        )}
+                        {router.pathname === "/twoside" && (
+                            <TwoSideEventComponent/>
+                        )}
+                        {router.pathname === "/table" && (
+                            <TableTournamentEvents />
+                        )}
+                        {router.pathname === "/playoff" && (
+                            <PlayOffTournamentEvents />
+                        )}
                     </PageContainer>
                 </DashboardLayout>
             </AppProvider>

@@ -17,7 +17,7 @@ import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './components/CustomIcons';
 import { useNavigate } from "react-router-dom";
-import { Alert, Snackbar } from "@mui/material";
+import { Alert, Snackbar, RadioGroup, Radio, FormHelperText } from "@mui/material";
 import {useState} from "react";
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -71,50 +71,15 @@ export default function SignUp(props) {
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
     const [nameError, setNameError] = React.useState(false);
     const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+    const [inGameRole, setInGameRole] = React.useState('Player');
     const navigate = useNavigate();
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertSeverity, setAlertSeverity] = useState("success");
 
-    /*const validateInputs = (event) => {
-        event.preventDefault(); // предотвращаем перезагрузку страницы
-        const form = event.target;
-
-        const email = form.elements.email;
-        const userPassword = form.elements.userPassword;
-        const name = form.elements.firstName;
-
-        let isValid = true;
-
-        if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-            setEmailError(true);
-            setEmailErrorMessage('Please enter a valid email address.');
-            isValid = false;
-        } else {
-            setEmailError(false);
-            setEmailErrorMessage('');
-        }
-
-        if (!userPassword.value || userPassword.value.length < 6) {
-            setPasswordError(true);
-            setPasswordErrorMessage('Password must be at least 6 characters long.');
-            isValid = false;
-        } else {
-            setPasswordError(false);
-            setPasswordErrorMessage('');
-        }
-
-        if (!name.value || name.value.length < 1) {
-            setNameError(true);
-            setNameErrorMessage('Name is required.');
-            isValid = false;
-        } else {
-            setNameError(false);
-            setNameErrorMessage('');
-        }
-
-        return isValid;
-    };*/
+    const handleRoleChange = (event) => {
+        setInGameRole(event.target.value);
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -126,6 +91,7 @@ export default function SignUp(props) {
             userLogin: formData.get("userLogin"),
             userPassword: formData.get("userPassword"),
             email: formData.get("email"),
+            inGameRole: formData.get("inGameRole"),
             favouriteTeam: Number(formData.get("favouriteTeam")),
         };
 
@@ -151,7 +117,7 @@ export default function SignUp(props) {
                 setAlertOpen(true);
             }
         } catch (error) {
-            console.error("Ошибка:", error);
+            console.error(":", error);
             setAlertMessage("Error connection with server. Please try again later.");
             setAlertSeverity("error");
             setAlertOpen(true);
@@ -161,17 +127,13 @@ export default function SignUp(props) {
     return (
         <AppTheme {...props}>
             <CssBaseline enableColorScheme />
-            {/* Переключатель темы будет виден всегда */}
             <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1100 }} />
 
-            {/* Обёртка на всю страницу с естественным скроллом */}
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    // Убедимся, что содержимое не перекрывается
                     boxSizing: 'border-box',
-                    // Небольшой отступ со всех сторон
                     padding: { xs: '1rem', sm: '2rem' },
                 }}
             >
@@ -189,9 +151,8 @@ export default function SignUp(props) {
                         sx={{
                             width: '100%',
                             maxWidth: '500px',
-                            // Достаточный отступ внутри карточки
+
                             padding: { xs: '1.5rem', sm: '2rem' },
-                            // Стиль тени для лучшего визуального восприятия
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                         }}
                     >
@@ -204,7 +165,7 @@ export default function SignUp(props) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                mb: 3, // Отступ после заголовка
+                                mb: 3,
                             }}
                         >
                             Sign up <SitemarkIcon />
@@ -216,7 +177,7 @@ export default function SignUp(props) {
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: 2.5, // Увеличен интервал между полями
+                                gap: 2.5,
                             }}
                         >
                             <FormControl>
@@ -292,6 +253,19 @@ export default function SignUp(props) {
                                     color={passwordError ? 'error' : 'primary'}
                                 />
                             </FormControl>
+                            <FormControl>
+                                <FormLabel id="inGameRole-label">Who is gonna use this profile</FormLabel>
+                                <RadioGroup
+                                    aria-labelledby="inGameRole-label"
+                                    name="inGameRole"
+                                    value={inGameRole}
+                                    onChange={handleRoleChange}
+                                    row
+                                >
+                                    <FormControlLabel value="Player" control={<Radio />} label="Player" />
+                                    <FormControlLabel value="Coach" control={<Radio />} label="Coach" />
+                                </RadioGroup>
+                            </FormControl>
                             <Button
                                 type="submit"
                                 fullWidth
@@ -303,29 +277,7 @@ export default function SignUp(props) {
                             </Button>
                         </Box>
 
-                        {/*<Divider sx={{ my: 3 }}>
-                            <Typography sx={{ color: 'text.secondary' }}>or</Typography>
-                        </Divider>*/}
-
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {/*    <Button*/}
-                        {/*        fullWidth*/}
-                        {/*        variant="outlined"*/}
-                        {/*        onClick={() => alert('Sign up with Google')}*/}
-                        {/*        startIcon={<GoogleIcon />}*/}
-                        {/*        size="large"*/}
-                        {/*    >*/}
-                        {/*        Sign up with Google*/}
-                        {/*    </Button>*/}
-                        {/*    <Button*/}
-                        {/*        fullWidth*/}
-                        {/*        variant="outlined"*/}
-                        {/*        onClick={() => alert('Sign up with Facebook')}*/}
-                        {/*        startIcon={<FacebookIcon />}*/}
-                        {/*        size="large"*/}
-                        {/*    >*/}
-                        {/*        Sign up with Facebook*/}
-                        {/*    </Button>*/}
                             <Typography sx={{ textAlign: 'center', mt: 2 }}>
                                 Already have an account?{' '}
                                 <Link
@@ -341,7 +293,6 @@ export default function SignUp(props) {
                 </SignUpContainer>
             </Box>
 
-            {/* Снэкбар вынесен за пределы карточки, чтобы он не влиял на скролл */}
             <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
                 <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: "100%" }}>
                     {alertMessage}

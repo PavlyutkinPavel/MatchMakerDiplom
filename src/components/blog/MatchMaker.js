@@ -20,8 +20,6 @@ export default function MatchMaker(props) {
                 <MainContent />
                 <Latest />
             </Container>
-            <Footer />
-
         </AppTheme>
     );
 }
