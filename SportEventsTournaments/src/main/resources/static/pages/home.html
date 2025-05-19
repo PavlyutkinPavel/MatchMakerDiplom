@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Home - PashaGram</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<header>
+    <h1>Welcome to PashaGram</h1>
+</header>
+<main>
+    <p>This is the main page. Please select a section from the menu.</p>
+    <div id="content-area" class="container mt-5">
+
+        <div id="main-page">
+            <h1>Welcome to PashaGram!</h1>
+            <p>Please select a section from the menu.Or chat in main...</p>
+        </div>
+
+        <div id="username-page" class="hidden">
+            <h1 class="text-center">Enter your username</h1>
+            <form id="usernameForm" name="usernameForm">
+                <div class="form-group">
+                    <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
+                </div>
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-success">Start Chatting</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="chat-page" class="hidden">
+            <div class="chat-header">
+                <h2>PashaGram</h2>
+            </div>
+            <div class="connecting text-center">
+                Connecting...
+            </div>
+            <ul id="messageArea" class="list-group">
+
+            </ul>
+            <form id="messageForm" name="messageForm">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" id="message" placeholder="Type a message..." autocomplete="off" class="form-control"/>
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</main>
+</body>
+
+<script>
+    // Загрузка общего хедера
+    fetch('/header.html')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('header').innerHTML = html;
+        });
+</script>
+</html>

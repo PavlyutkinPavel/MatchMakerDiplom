@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>PashaGram</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/main.css" />
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">PashaGram</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="pages/home.html" data-page="main">Home</a>
+            </li>
+            <li class="nav-item" id="menu-registration">
+                <a class="nav-link" href="pages/registration.html" data-page="registration">Registration</a>
+            </li>
+            <li class="nav-item" id="menu-login">
+                <a class="nav-link" href="pages/login.html" data-page="login">Login</a>
+            </li>
+            <li class="nav-item" id="menu-logout" style="display: none;">
+                <a class="nav-link" href="#" onclick="logout()">Logout</a>
+            </li>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sections
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="pages/chat.html" data-page="chat" id="chat-link">Chat</a>
+                    <a class="dropdown-item" href="pages/forum.html" data-page="forum">Forum</a>
+                    <a class="dropdown-item" href="pages/news" data-page="news">News</a>
+                    <a class="dropdown-item" href="pages/football.html" data-page="football">Football</a>
+                    <a class="dropdown-item" href="pages/shop.html" data-page="shop">Shop</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<div id="content-area" class="container mt-5">
+
+    <div id="main-page">
+        <h1>Welcome to PashaGram!</h1>
+        <p>Please select a section from the menu.</p>
+    </div>
+
+    <div id="username-page" class="hidden">
+        <h1 class="text-center">Enter your username</h1>
+        <form id="usernameForm" name="usernameForm">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Username" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-success">Start Chatting</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="registration-page" class="hidden">
+        <h1 class="text-center">Registration</h1>
+        <form id="registrationForm" name="registrationForm">
+            <div class="form-group">
+                <input type="text" id="firstName" name="firstName" placeholder="First Name" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="text" id="lastName" name="lastName" placeholder="Last Name" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="text" id="userLogin" name="userLogin" placeholder="Login" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="password" id="userPassword" name="userPassword" placeholder="Password" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="email" id="email" name="email" placeholder="Email" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-success">Register</button>
+            </div>
+        </form>
+    </div>
+
+
+    <div id="login-page" class="hidden">
+        <h1 class="text-center">Login</h1>
+        <form id="loginForm" name="loginForm">
+            <div class="form-group">
+                <input type="text" id="username" name="username" placeholder="Username" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" name="password" placeholder="Password" autocomplete="off" class="form-control" />
+            </div>
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+    </div>
+
+
+    <div id="chat-page" class="hidden">
+        <div class="chat-header">
+            <h2>PashaGram</h2>
+        </div>
+        <div class="connecting text-center">
+            Connecting...
+        </div>
+        <ul id="messageArea" class="list-group">
+
+        </ul>
+        <form id="messageForm" name="messageForm">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" id="message" placeholder="Type a message..." autocomplete="off" class="form-control"/>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="forum-page" class="hidden">
+        <h1>Forum</h1>
+        <p>Forum content.</p>
+    </div>
+
+    <div id="news-page" class="hidden">
+        <h1 class="text-center">News</h1>
+
+        <!-- Форма для создания своей новости -->
+        <div class="create-news-form mb-5">
+            <h2>Create Your Own News</h2>
+            <form id="createNewsForm" name="createNewsForm">
+                <div class="form-group">
+                    <input type="text" id="newsTitle" name="newsTitle" placeholder="News Title" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <textarea id="newsDescription" name="newsDescription" placeholder="News Description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="file" id="newsImage" name="newsImage" class="form-control-file" />
+                </div>
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-success">Submit News</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Секция для отображения новостей -->
+        <div id="news-list">
+            <!-- Пример одной новости -->
+            <div class="news-item card mb-4">
+                <img src="images/doctor-full.jpg" alt="Football News" class="card-img-top">
+                <div class="card-body">
+                    <h5 class="card-title">Exciting Football Match</h5>
+                    <p class="card-text">Yesterday's match between Team A and Team B ended in a thrilling 3-2 victory!</p>
+                    <div class="news-actions d-flex justify-content-between">
+                        <button class="btn btn-light">👍 Like</button>
+                        <button class="btn btn-light">👎 Dislike</button>
+                        <button class="btn btn-primary">💬 Comment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Еще одна новость -->
+            <div class="news-item card mb-4">
+                <img src="images/doctor-full.jpg" alt="Football News" class="card-img-top">
+                <div class="card-body">
+                    <h5 class="card-title">Transfer News</h5>
+                    <p class="card-text">Star player John Doe has signed a contract with Team C for the next season.</p>
+                    <div class="news-actions d-flex justify-content-between">
+                        <button class="btn btn-light">👍 Like</button>
+                        <button class="btn btn-light">👎 Dislike</button>
+                        <button class="btn btn-primary">💬 Comment</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div id="football-page" class="hidden">
+        <h1>Football</h1>
+        <p>Football section content.</p>
+    </div>
+
+    <div id="shop-page" class="hidden">
+        <h1>Shop</h1>
+        <p>Shop content.</p>
+    </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/main.js"></script>
+<script>
+
+    function updateMenu(isLoggedIn) {
+        const loginMenu = document.getElementById('menu-login');
+        const registrationMenu = document.getElementById('menu-registration');
+        const logoutMenu = document.getElementById('menu-logout');
+
+        if (isLoggedIn) {
+            if (loginMenu) loginMenu.style.display = 'none';
+            if (registrationMenu) registrationMenu.style.display = 'none';
+            if (logoutMenu) logoutMenu.style.display = 'block';
+        } else {
+            if (loginMenu) loginMenu.style.display = 'block';
+            if (registrationMenu) registrationMenu.style.display = 'block';
+            if (logoutMenu) logoutMenu.style.display = 'none';
+        }
+    }
+
+    document.getElementById('registrationForm').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Отменяем стандартное поведение формы
+
+        // Собираем данные из формы
+        const registrationData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            userLogin: document.getElementById('userLogin').value,
+            userPassword: document.getElementById('userPassword').value,
+            email: document.getElementById('email').value
+        };
+
+        try {
+            // Отправляем POST-запрос
+            const response = await fetch('/registration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(registrationData)
+            });
+
+            if (response.ok) {
+                alert('Registration successful!');
+
+                // Удаляем элементы меню
+                document.getElementById('menu-registration').remove();
+                document.getElementById('menu-login').remove();
+
+                // Дополнительно можно показать кнопку Logout или другие разделы
+            } else {
+                alert('Registration failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error during registration:', error);
+            alert('An error occurred. Please try again later.');
+        }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Отменяем стандартное поведение формы
+
+        const loginData = {
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginData)
+            });
+
+            if (response.ok) {
+                alert('Login successful!');
+                updateMenu(true); // Показываем кнопку Logout
+            } else {
+                alert('Login failed. Please check your credentials.');
+            }
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('An error occurred. Please try again later.');
+        }
+    });
+
+    function logout() {
+        // Логика выхода (например, удаление токена)
+        alert('Logged out successfully!');
+        updateMenu(false); // Показываем кнопки Login и Registration
+    }
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     const isLoggedIn = Boolean(localStorage.getItem('authToken')); // Пример проверки авторизации
+    //     updateMenu(isLoggedIn);
+    // });
+
+
+
+</script>
+
+
+
+</body>
+</html>
