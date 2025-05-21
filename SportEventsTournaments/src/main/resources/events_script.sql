@@ -154,3 +154,22 @@ INSERT INTO two_team_events (event_id, team1_id, team2_id, status, team1_score, 
 
 alter table events
     alter column event_type type varchar(255) using event_type::varchar(255);
+
+alter table single_events
+    alter column status type varchar(255) using status::varchar(255);
+
+
+alter table single_events
+    rename column event_id to id;
+
+
+-- auto-generated definition
+create sequence single_events_id_seq;
+
+alter sequence single_events_id_seq owner to postgres;
+
+alter table two_team_events
+    alter column status type varchar(255) using status::varchar(255);
+
+alter table playoff_events
+    alter column status type varchar(255) using status::varchar(255);

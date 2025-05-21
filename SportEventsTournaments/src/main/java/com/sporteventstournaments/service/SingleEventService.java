@@ -47,8 +47,9 @@ public class SingleEventService {
         }
 
         // Create event first (assuming the EventService has been called to create the general Event)
-        Event event = eventRepository.findById(singleEventDTO.getEventId())
+        Event event = eventRepository.findById(singleEventDTO.getEvent().getId())
                 .orElseThrow(EventNotFoundException::new);
+        System.out.println(event);
 
         // Check if the user is the creator of the event
         Long userId = securityService.getUserIdByLogin(principal.getName());
@@ -57,10 +58,12 @@ public class SingleEventService {
         }
 
         SingleEvent singleEvent = new SingleEvent();
-        singleEvent.setEventId(event.getId());
+//        singleEvent.setId(singleEventDTO.getEvent().getId());
         singleEvent.setEvent(event);
         singleEvent.setMaxParticipants(singleEventDTO.getMaxParticipants());
         singleEvent.setStatus(SingleEvent.SingleEventStatus.PENDING);
+
+        System.out.println(singleEvent);
 
         return singleEventRepository.save(singleEvent);
     }
@@ -82,7 +85,7 @@ public class SingleEventService {
         existingSingleEvent.setMaxParticipants(singleEventDTO.getMaxParticipants());
         existingSingleEvent.setStatus(singleEventDTO.getStatus());
 
-        return singleEventRepository.save(existingSingleEvent);
+        return singleEventRepository.saveAndFlush(existingSingleEvent);
     }
 
     @Transactional
