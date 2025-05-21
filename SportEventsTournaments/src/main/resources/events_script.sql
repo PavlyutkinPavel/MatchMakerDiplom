@@ -151,3 +151,6 @@ INSERT INTO table_event_teams (event_id, team_id, points, wins, losses, draws) V
 -- Two team event
 INSERT INTO two_team_events (event_id, team1_id, team2_id, status, team1_score, team2_score) VALUES
     (4, 10, 11, 'PENDING', 0, 0);
+
+alter table events
+    alter column event_type type varchar(255) using event_type::varchar(255);
