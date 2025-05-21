@@ -29,8 +29,4 @@ public interface UserChatRelationRepository extends JpaRepository<UserChatRelati
     @Transactional
     @Query(nativeQuery = true, value = "INSERT INTO db_university.l_users_chats (id, chat_id, user_id) VALUES (?1, ?2, ?3)")
     void saveEntrance(Long id, Long chatId, Long userId);
-
-
-
-
 }

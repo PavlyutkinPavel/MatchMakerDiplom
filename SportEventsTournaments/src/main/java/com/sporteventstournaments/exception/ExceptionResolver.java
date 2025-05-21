@@ -91,6 +91,24 @@ public class ExceptionResolver {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(value = EventNotFoundException.class)
+    ResponseEntity<HttpStatus> EventNotFoundException(){
+        log.info("EventNotFoundException exception!!!");
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = ForbiddenOperationException.class)
+    ResponseEntity<HttpStatus> ForbiddenOperationException(){
+        log.info("ForbiddenOperationException exception!!!");
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = InvalidOperationException.class)
+    ResponseEntity<HttpStatus> InvalidOperationException(){
+        log.info("InvalidOperationException exception!!!");
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(value = NewsNotFoundException.class)
     ResponseEntity<HttpStatus> NewsNotFoundException(){
         log.info("NewsNotFound exception!!!");
