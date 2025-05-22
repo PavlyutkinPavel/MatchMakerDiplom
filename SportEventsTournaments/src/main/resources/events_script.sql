@@ -173,3 +173,10 @@ alter table two_team_events
 
 alter table playoff_events
     alter column status type varchar(255) using status::varchar(255);
+
+create sequence two_team_events_id_seq;
+
+alter sequence two_team_events_id_seq owner to postgres;
+
+alter table two_team_events
+    rename column event_id to id;

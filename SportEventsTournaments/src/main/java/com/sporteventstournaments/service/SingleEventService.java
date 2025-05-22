@@ -51,22 +51,18 @@ public class SingleEventService {
             throw new ForbiddenOperationException("User must be authenticated");
         }
 
-        // Получаем базовое событие
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException("Base event not found"));
 
-        // Проверяем права пользователя
         Long userId = securityService.getUserIdByLogin(principal.getName());
         if (!event.getCreatedBy().equals(userId) && !securityService.checkIfAdmin(principal.getName())) {
             throw new ForbiddenOperationException("Only the event creator or admin can create a single event for this event");
         }
 
-        // Проверяем, что SingleEvent еще не существует для данного Event
         if (singleEventRepository.existsById(eventId)) {
             throw new InvalidOperationException("Single event already exists for this base event");
         }
 
-        // Создаем SingleEvent
         SingleEvent singleEvent = new SingleEvent();
         singleEvent.setEvent(event);
         singleEvent.setMaxParticipants(maxParticipants);
