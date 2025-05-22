@@ -1,4 +1,4 @@
-package com.sporteventstournaments.controller;
+package com.sporteventstournaments.controller.events;
 
 import com.sporteventstournaments.domain.Event;
 import com.sporteventstournaments.domain.dto.EventDTO;
