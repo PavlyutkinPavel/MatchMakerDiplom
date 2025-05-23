@@ -1,14 +1,12 @@
 package com.sporteventstournaments.service;
 
-import com.sporteventstournaments.domain.Event;
-import com.sporteventstournaments.domain.TableEvent;
-import com.sporteventstournaments.domain.TableEventTeam;
-import com.sporteventstournaments.domain.TableEventTeamId;
+import com.sporteventstournaments.domain.*;
 import com.sporteventstournaments.domain.dto.TableEventDTO;
 import com.sporteventstournaments.exception.EventNotFoundException;
 import com.sporteventstournaments.exception.ForbiddenOperationException;
 import com.sporteventstournaments.exception.InvalidOperationException;
 import com.sporteventstournaments.repository.EventRepository;
+import com.sporteventstournaments.repository.SingleEventParticipantRepository;
 import com.sporteventstournaments.repository.TableEventRepository;
 import com.sporteventstournaments.repository.TableEventTeamRepository;
 import com.sporteventstournaments.security.service.SecurityService;
@@ -40,31 +38,38 @@ public class TableEventService {
     }
 
     @Transactional
-    public TableEvent createTableEvent(TableEventDTO tableEventDTO, Principal principal) {
-        if (principal == null) {
-            throw new ForbiddenOperationException("User must be authenticated");
-        }
+    public TableEvent createTableEvent(Long eventId, Integer maxTeams,
+                                       List<Long> teamIds, Principal principal) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Base event not found"));
 
-        // Create event first (assuming the EventService has been called to create the general Event)
-        Event event = eventRepository.findById(tableEventDTO.getEventId())
-                .orElseThrow(EventNotFoundException::new);
-
-        // Check if the user is the creator of the event
         Long userId = securityService.getUserIdByLogin(principal.getName());
         if (!event.getCreatedBy().equals(userId) && !securityService.checkIfAdmin(principal.getName())) {
-            throw new ForbiddenOperationException("Only the event creator or admin can create a table event for this event");
+            throw new ForbiddenOperationException("Only the event creator or admin can create a single event for this event");
+        }
+
+        if (tableEventRepository.existsById(eventId)) {
+            throw new InvalidOperationException("Single event already exists for this base event");
         }
 
         TableEvent tableEvent = new TableEvent();
-        tableEvent.setEventId(event.getId());
         tableEvent.setEvent(event);
-        tableEvent.setMaxTeams(tableEventDTO.getMaxTeams());
-        tableEvent.setStatus(TableEvent.TableEventStatus.OPEN);
+        tableEvent.setMaxTeams(maxTeams);
+        tableEvent.setStatus(TableEvent.TableEventStatus.IN_PROGRESS);
 
-        return tableEventRepository.save(tableEvent);
+        TableEvent savedEvent = tableEventRepository.save(tableEvent);
+
+        if (teamIds != null && !teamIds.isEmpty()) {
+            for (Long teamId : teamIds) {
+                addTeam(savedEvent.getId(), teamId, principal);
+            }
+        }
+
+        return savedEvent;
     }
 
-    public TableEvent updateTableEvent(Long id, TableEventDTO tableEventDTO, Principal principal) {
+    public TableEvent updateTableEvent(Long id, Integer maxTeams,
+                                       TableEvent.TableEventStatus status, Principal principal) {
         if (principal == null) {
             throw new ForbiddenOperationException("User must be authenticated");
         }
@@ -72,16 +77,27 @@ public class TableEventService {
         TableEvent existingTableEvent = tableEventRepository.findById(id)
                 .orElseThrow(EventNotFoundException::new);
 
-        // Check if the user is the creator of the event
         Long userId = securityService.getUserIdByLogin(principal.getName());
-        if (!existingTableEvent.getEvent().getCreatedBy().equals(userId) && !securityService.checkIfAdmin(principal.getName())) {
-            throw new ForbiddenOperationException("Only the event creator or admin can update this table event");
+        if (!existingTableEvent.getEvent().getCreatedBy().equals(userId) &&
+                !securityService.checkIfAdmin(principal.getName())) {
+            throw new ForbiddenOperationException("Only the event creator or admin can update this single event");
         }
 
-        existingTableEvent.setMaxTeams(tableEventDTO.getMaxTeams());
-        existingTableEvent.setStatus(tableEventDTO.getStatus());
+        if (maxTeams != null) {
+            int currentParticipants = tableEventTeamRepository.countTeamsByEventId(id);
+            if (maxTeams < currentParticipants) {
+                throw new InvalidOperationException(
+                        String.format("Cannot set max participants to %d. Current participants: %d",
+                                maxTeams, currentParticipants));
+            }
+            existingTableEvent.setMaxTeams(maxTeams);
+        }
 
-        return tableEventRepository.save(existingTableEvent);
+        if (status != null) {
+            existingTableEvent.setStatus(status);
+        }
+
+        return tableEventRepository.saveAndFlush(existingTableEvent);
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package com.sporteventstournaments.controller.events;
 
+import com.sporteventstournaments.domain.SingleEvent;
 import com.sporteventstournaments.domain.TableEvent;
 import com.sporteventstournaments.domain.TableEventTeam;
 import com.sporteventstournaments.domain.dto.TableEventDTO;
@@ -8,6 +9,7 @@ import com.sporteventstournaments.service.TableEventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +24,27 @@ import java.util.List;
 public class TableEventController {
 
     private final TableEventService tableEventService;
-    private final SecurityService securityService;
+
+
+    // ================ REQUEST DTOs ================
+
+    @Data
+    public static class CreateTableEventRequest {
+        private Long eventId;
+        private Integer maxTeams;
+        private List<Long> teamsIds;
+    }
+
+    @Data
+    public static class UpdateTableEventRequest {
+        private Integer maxTeams;
+        private TableEvent.TableEventStatus status;
+    }
+
+    @Data
+    public static class AddParticipantsRequest {
+        private List<Long> teamsIds;
+    }
 
     @Operation(summary = "Get all table events")
     @GetMapping
@@ -68,26 +90,36 @@ public class TableEventController {
 
     @Operation(summary = "Create a table event (event creator or admin only)")
     @PostMapping
-    public ResponseEntity<TableEvent> create(@RequestBody TableEventDTO dto, Principal principal) {
+    public ResponseEntity<TableEvent> create(@RequestBody CreateTableEventRequest dto, Principal principal) {
         if (principal == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        TableEvent created = tableEventService.createTableEvent(dto, principal);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        TableEvent created = tableEventService.createTableEvent(
+                dto.getEventId(),
+                dto.getMaxTeams(),
+                dto.getTeamsIds(),
+                principal
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Operation(summary = "Update a table event (event creator or admin only)")
     @PutMapping("/{id}")
     public ResponseEntity<TableEvent> update(@PathVariable Long id,
-                                             @RequestBody TableEventDTO dto,
+                                             @RequestBody UpdateTableEventRequest request,
                                              Principal principal) {
         if (principal == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        TableEvent updated = tableEventService.updateTableEvent(id, dto, principal);
-        return new ResponseEntity<>(updated, HttpStatus.OK);
+        TableEvent updated = tableEventService.updateTableEvent(
+                id,
+                request.getMaxTeams(),
+                request.getStatus(),
+                principal
+        );
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Delete a table event (event creator or admin only)")

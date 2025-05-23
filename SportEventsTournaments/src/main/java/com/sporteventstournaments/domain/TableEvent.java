@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component;
 public class TableEvent {
     @Schema(description = "Event identifier")
     @Id
-    @Column(name = "event_id")
-    private Long eventId;
+    @SequenceGenerator(name = "tableEventSeqGen", sequenceName = "table_events_id_seq", allocationSize = 1)
+    @GeneratedValue(generator = "tableEventSeqGen")
+    private Long id;
 
     @OneToOne
-    @JoinColumn(name = "event_id")
+    @JoinColumn(name = "id")
     @MapsId
     private Event event;
 

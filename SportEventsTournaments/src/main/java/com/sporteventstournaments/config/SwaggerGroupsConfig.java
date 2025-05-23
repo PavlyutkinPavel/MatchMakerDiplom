@@ -22,4 +22,12 @@ public class SwaggerGroupsConfig {
                 .packagesToScan("com.sporteventstournaments.security.controller")
                 .build();
     }
+
+    @Bean
+    public GroupedOpenApi allGroup() {
+        return GroupedOpenApi.builder()
+                .group("All")
+                .packagesToScan("com.sporteventstournaments.controller")
+                .build();
+    }
 }

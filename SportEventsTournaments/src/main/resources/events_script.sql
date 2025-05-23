@@ -180,3 +180,12 @@ alter sequence two_team_events_id_seq owner to postgres;
 
 alter table two_team_events
     rename column event_id to id;
+
+-- ДОБАВИТЬ ОТСЮДА
+
+alter table table_events
+    rename column event_id to id;
+
+create sequence table_events_id_seq;
+
+alter sequence table_events_id_seq owner to postgres;
