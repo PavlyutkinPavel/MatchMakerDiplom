@@ -78,14 +78,54 @@ create sequence public.reviews_id_seq;
 
 alter sequence public.reviews_id_seq owner to postgres;
 
+create sequence public.events_id_seq;
+
+alter sequence public.events_id_seq owner to postgres;
+
+create sequence public.single_events_id_seq;
+
+alter sequence public.single_events_id_seq owner to postgres;
+
+create sequence public.two_team_events_id_seq;
+
+alter sequence public.two_team_events_id_seq owner to postgres;
+
+create sequence public.table_events_id_seq;
+
+alter sequence public.table_events_id_seq owner to postgres;
+
+create sequence public.playoff_events_id_seq;
+
+alter sequence public.playoff_events_id_seq owner to postgres;
+
+create type public.event_type as enum ('SINGLE', 'TWO_TEAMS', 'TABLE', 'PLAYOFF');
+
+alter type public.event_type owner to postgres;
+
+create type public.playoff_event_status as enum ('DRAFT', 'ACTIVE', 'COMPLETED');
+
+alter type public.playoff_event_status owner to postgres;
+
+create type public.single_event_status as enum ('PENDING', 'SCHEDULED', 'COMPLETED', 'CANCELLED');
+
+alter type public.single_event_status owner to postgres;
+
+create type public.table_event_status as enum ('OPEN', 'IN_PROGRESS', 'COMPLETED');
+
+alter type public.table_event_status owner to postgres;
+
+create type public.two_team_event_status as enum ('PENDING', 'SCHEDULED', 'COMPLETED', 'CANCELLED');
+
+alter type public.two_team_event_status owner to postgres;
+
 create table if not exists public.chats
 (
     chat_creator     bigint,
     id               bigint not null
-    primary key,
+        primary key,
     chat_description varchar(255),
     chat_name        varchar(255)
-    );
+);
 
 alter table public.chats
     owner to postgres;
@@ -93,12 +133,12 @@ alter table public.chats
 create table if not exists public.coaches
 (
     id           bigint not null
-    primary key,
+        primary key,
     team_id      bigint,
     achievements varchar(255),
     biography    varchar(255),
     coach_name   varchar(255)
-    );
+);
 
 alter table public.coaches
     owner to postgres;
@@ -108,11 +148,11 @@ create table if not exists public.comments
     comment_dislikes bigint,
     comment_likes    bigint,
     id               bigint not null
-    primary key,
+        primary key,
     post_id          bigint,
     user_id          bigint,
     comment_content  varchar(255)
-    );
+);
 
 alter table public.comments
     owner to postgres;
@@ -120,7 +160,7 @@ alter table public.comments
 create table if not exists public.fan_club_members
 (
     id      bigint not null
-    primary key,
+        primary key,
     team_id bigint,
     user_id bigint
 );
@@ -133,12 +173,12 @@ create table if not exists public.forum
     date_creation timestamp(6),
     forum_members bigint,
     id            bigint not null
-    primary key,
+        primary key,
     post_id       bigint,
     user_id       bigint,
     description   varchar(255),
     title         varchar(255)
-    );
+);
 
 alter table public.forum
     owner to postgres;
@@ -147,10 +187,10 @@ create table if not exists public.l_player_coach
 (
     coach_id       bigint,
     id             bigint not null
-    primary key,
+        primary key,
     player_id      bigint,
     specialization varchar(255)
-    );
+);
 
 alter table public.l_player_coach
     owner to postgres;
@@ -158,11 +198,11 @@ alter table public.l_player_coach
 create table if not exists public.match_results
 (
     id          bigint not null
-    primary key,
+        primary key,
     winner_id   bigint,
     description varchar(255),
     final_score varchar(255)
-    );
+);
 
 alter table public.match_results
     owner to postgres;
@@ -173,10 +213,10 @@ create table if not exists public.match_schedule
     away_team_id      bigint,
     home_team_id      bigint,
     id                bigint not null
-    primary key,
+        primary key,
     match_date        timestamp(6),
     match_location    varchar(255)
-    );
+);
 
 alter table public.match_schedule
     owner to postgres;
@@ -185,14 +225,14 @@ create table if not exists public.messages
 (
     chat_id         bigint,
     id              bigint not null
-    primary key,
+        primary key,
     message_content varchar(255),
     message_type    varchar(255)
-    constraint messages_message_type_check
-    check ((message_type)::text = ANY
-((ARRAY ['CHAT'::character varying, 'JOIN'::character varying, 'LEAVE'::character varying])::text[])),
+        constraint messages_message_type_check
+            check ((message_type)::text = ANY
+                   (ARRAY [('CHAT'::character varying)::text, ('JOIN'::character varying)::text, ('LEAVE'::character varying)::text])),
     sender          varchar(255)
-    );
+);
 
 alter table public.messages
     owner to postgres;
@@ -200,13 +240,13 @@ alter table public.messages
 create table if not exists public.news
 (
     id               bigint not null
-    primary key,
+        primary key,
     publication_date timestamp(6),
     team_id          bigint,
     user_id          bigint,
     news_text        varchar(255),
     title            varchar(255)
-    );
+);
 
 alter table public.news
     owner to postgres;
@@ -214,12 +254,12 @@ alter table public.news
 create table if not exists public.players
 (
     id            bigint not null
-    primary key,
+        primary key,
     player_number bigint,
     team_id       bigint,
     player_name   varchar(255),
     titles        varchar(255)
-    );
+);
 
 alter table public.players
     owner to postgres;
@@ -229,13 +269,13 @@ create table if not exists public.post
     comment_number bigint,
     created_date   timestamp(6),
     id             bigint not null
-    primary key,
+        primary key,
     post_dislikes  bigint,
     post_likes     bigint,
     user_id        bigint,
     description    varchar(255),
     post_text      varchar(255)
-    );
+);
 
 alter table public.post
     owner to postgres;
@@ -243,17 +283,18 @@ alter table public.post
 create table if not exists public.security_credentials
 (
     id                bigint not null
-    primary key,
+        primary key,
     user_id           bigint,
     user_login        varchar(255),
     user_password     varchar(255),
     user_role         varchar(255)
-    constraint security_credentials_user_role_check
-    check ((user_role)::text = ANY ((ARRAY ['ADMIN'::character varying, 'USER'::character varying])::text[])),
+        constraint security_credentials_user_role_check
+            check ((user_role)::text = ANY
+                   (ARRAY [('ADMIN'::character varying)::text, ('USER'::character varying)::text])),
     verification_code varchar(6),
     enabled           boolean,
     verified_rq       boolean
-    );
+);
 
 alter table public.security_credentials
     owner to postgres;
@@ -261,7 +302,7 @@ alter table public.security_credentials
 create table if not exists public.shop
 (
     id       bigint not null
-    primary key,
+        primary key,
     match_id bigint,
     user_id  bigint
 );
@@ -273,11 +314,11 @@ create table if not exists public.stadiums
 (
     capacity         bigint,
     id               bigint not null
-    primary key,
+        primary key,
     team_id          bigint,
     stadium_location varchar(255),
     stadium_name     varchar(255)
-    );
+);
 
 alter table public.stadiums
     owner to postgres;
@@ -286,13 +327,13 @@ create table if not exists public.users
 (
     created      timestamp(6),
     id           bigint not null
-    primary key,
+        primary key,
     email        varchar(255),
     first_name   varchar(255),
     last_name    varchar(255),
     user_login   varchar(255),
     in_game_role varchar(255)
-    );
+);
 
 alter table public.users
     owner to postgres;
@@ -300,13 +341,13 @@ alter table public.users
 create table if not exists public.l_users_chats
 (
     chat_id bigint
-    constraint fkpr8tg4tg0r1httem8xw5wv45g
-    references public.chats,
+        constraint fkpr8tg4tg0r1httem8xw5wv45g
+            references public.chats,
     id      bigint not null
-    primary key,
+        primary key,
     user_id bigint
-    constraint fkfjvvy1mxvm6cmegysl2cjltj6
-    references public.users
+        constraint fkfjvvy1mxvm6cmegysl2cjltj6
+            references public.users
 );
 
 alter table public.l_users_chats
@@ -315,7 +356,7 @@ alter table public.l_users_chats
 create table if not exists public.teams
 (
     id           bigint not null
-    primary key,
+        primary key,
     achievements varchar(255),
     status       varchar(255),
     team_name    varchar(255),
@@ -324,12 +365,12 @@ create table if not exists public.teams
     country      varchar(255),
     city         varchar(255),
     creator_id   bigint
-    constraint teams_users_creator___fk
-    references public.users,
+        constraint teams_users_creator___fk
+            references public.users,
     director_id  integer
-    constraint teams_users_directro___fk
-    references public.users
-    );
+        constraint teams_users_directro___fk
+            references public.users
+);
 
 alter table public.teams
     owner to postgres;
@@ -337,14 +378,14 @@ alter table public.teams
 create table if not exists public.l_users_teams
 (
     id              bigserial
-    constraint l_users_teams_pk
-    primary key,
+        constraint l_users_teams_pk
+            primary key,
     user_id         bigint  not null
-    constraint l_users_teams_users___fk
-    references public.users,
+        constraint l_users_teams_users___fk
+            references public.users,
     team_id         integer not null
-    constraint l_users_teams_teams___fk
-    references public.teams,
+        constraint l_users_teams_teams___fk
+            references public.teams,
     accepted_invite boolean default false
 );
 
@@ -355,8 +396,8 @@ create table if not exists public.user_profiles
 (
     name         varchar(255),
     id           bigint not null
-    constraint id
-    primary key,
+        constraint id
+            primary key,
     username     varchar(255),
     bio          varchar(255),
     location     varchar(255),
@@ -364,9 +405,9 @@ create table if not exists public.user_profiles
     avatar       bytea,
     email        varchar(255),
     user_id      bigint
-    constraint user_profiles_users_id_fk
-    references public.users
-    );
+        constraint user_profiles_users_id_fk
+            references public.users
+);
 
 alter table public.user_profiles
     owner to postgres;
@@ -374,20 +415,156 @@ alter table public.user_profiles
 create table if not exists public.reviews
 (
     id                 bigint        not null
-    primary key,
+        primary key,
     name               varchar(255)  not null,
     email              varchar(255)  not null,
     avatar             varchar(10)   not null,
     date               date          not null,
     rating             integer       not null
-    constraint reviews_rating_check
-    check ((rating >= 1) AND (rating <= 5)),
+        constraint reviews_rating_check
+            check ((rating >= 1) AND (rating <= 5)),
     review             varchar(1000) not null,
     tournament_type    varchar(100)  not null,
     verified           boolean       not null,
     verification_token varchar(255)  not null
-    );
+);
 
 alter table public.reviews
+    owner to postgres;
+
+create table if not exists public.events
+(
+    id             bigint  default nextval('events_id_seq'::regclass) not null
+        primary key,
+    event_name     varchar                                            not null,
+    event_date     timestamp,
+    event_location varchar,
+    event_type     varchar(255)                                       not null,
+    created_by     bigint,
+    created_at     timestamp,
+    sport_type     varchar default 'FOOTBALL'::character varying      not null
+);
+
+alter table public.events
+    owner to postgres;
+
+create table if not exists public.playoff_events
+(
+    id           bigint not null
+        primary key
+        constraint fk_playoff_event
+            references public.events
+            on delete cascade,
+    status       varchar(255),
+    bracket_size integer
+);
+
+alter table public.playoff_events
+    owner to postgres;
+
+create table if not exists public.playoff_matches
+(
+    event_id         bigint  not null
+        constraint fk_playoff_match_event
+            references public.playoff_events
+            on delete cascade,
+    match_number     integer not null,
+    round            integer,
+    team1_id         bigint,
+    team2_id         bigint,
+    team1_score      integer,
+    team2_score      integer,
+    winner_team_id   bigint,
+    match_start_time timestamp,
+    primary key (event_id, match_number)
+);
+
+alter table public.playoff_matches
+    owner to postgres;
+
+create table if not exists public.single_events
+(
+    id               bigint not null
+        primary key
+        constraint fk_single_event
+            references public.events
+            on delete cascade,
+    max_participants integer,
+    status           varchar(255)
+);
+
+alter table public.single_events
+    owner to postgres;
+
+create table if not exists public.single_event_participants
+(
+    event_id        bigint not null
+        constraint fk_s_event
+            references public.single_events
+            on delete cascade,
+    user_id         bigint not null
+        constraint fk_s_user
+            references public.users,
+    invitation_sent boolean,
+    accepted        boolean,
+    joined_at       timestamp,
+    primary key (event_id, user_id)
+);
+
+alter table public.single_event_participants
+    owner to postgres;
+
+create table if not exists public.table_events
+(
+    id        bigint not null
+        primary key
+        constraint fk_table_event
+            references public.events
+            on delete cascade,
+    max_teams integer,
+    status    varchar(255)
+);
+
+alter table public.table_events
+    owner to postgres;
+
+create table if not exists public.table_event_teams
+(
+    event_id bigint not null
+        constraint fk_table_event_team
+            references public.table_events
+            on delete cascade,
+    team_id  bigint not null
+        constraint fk_team
+            references public.teams,
+    points   integer,
+    wins     integer,
+    losses   integer,
+    draws    integer,
+    primary key (event_id, team_id)
+);
+
+alter table public.table_event_teams
+    owner to postgres;
+
+create table if not exists public.two_team_events
+(
+    id          bigint not null
+        primary key
+        constraint fk_two_team_event
+            references public.events
+            on delete cascade,
+    team1_id    bigint
+        constraint fk_team1
+            references public.teams,
+    team2_id    bigint
+        constraint fk_team2
+            references public.teams,
+    status      varchar(255),
+    team1_score integer,
+    team2_score integer
+);
+
+alter table public.two_team_events
     owner to postgres;
 
