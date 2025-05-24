@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useActionState } from 'react';
 import {
-    AppBar, Toolbar, Typography, Button, Container, Grid, Card, CardContent,
+    AppBar, Alert, Toolbar, Typography, Button, Container, Grid, Card, CardContent,
     CardMedia, Box, IconButton, Chip, Paper, useMediaQuery, Switch,
     FormControlLabel, CircularProgress, Tabs, Tab, Drawer, List, ListItem,
     ListItemText, ListItemIcon, Divider, ImageList, ImageListItem, Stepper, Step, StepLabel
@@ -40,8 +40,9 @@ import Rating from "@mui/material/Rating";
 import { useRef } from 'react';
 import { useAnimation, useInView } from 'framer-motion';
 import HighlightReel from "./HighlightReel";
-
+import { Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import useApplicationStore from 'store/useApplicationStore';
 
 
 
@@ -158,7 +159,8 @@ const steps = [
 
 // Пример данных
 // Featured events data
-const featuredEvents = [
+
+const mockFeaturedEvents = [
     {
         id: 1,
         title: 'City Football Championship',
@@ -339,6 +341,43 @@ const HomePage = () => {
     const isTablet = useMediaQuery('(max-width:960px)');
     const navigate = useNavigate();
 
+    const store = useApplicationStore();
+
+    const showSnackbar = (message, severity = 'success') => {
+        setSnackbar({ open: true, message, severity });
+    };
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
+
+    const [featuredEvents, setFeaturedEvents] = useState([]);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const loadEvents = async () => {
+        try {
+            const data = await store.singleEvent.fetchAll();
+            setFeaturedEvents(data);
+        } catch (error) {
+            showSnackbar(error.message, 'error');
+        }
+    };
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                await loadEvents();
+            } catch (error) {
+                showSnackbar(error.message, 'error');
+            }
+        };
+        loadData();
+    }, []);
+
+    useEffect(() => {
+        console.log('FeaturedEvents updated:', featuredEvents);
+        console.log(featuredEvents);
+    }, [featuredEvents]);
+
+
 
     const [filteredCategory, setFilteredCategory] = useState("All");
 
@@ -406,7 +445,7 @@ const HomePage = () => {
             setCurrentEvent((prev) => (prev + 1) % featuredEvents.length);
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [featuredEvents]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -443,32 +482,32 @@ const HomePage = () => {
 
     return (
         <AppTheme>
-            <CssBaseline enableColorScheme/>
-            <AppAppBar/>
+            <CssBaseline enableColorScheme />
+            <AppAppBar />
 
             <Box component="main">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentEvent}
-                        initial={{opacity: 0}}
-                        animate={{opacity: 1}}
-                        exit={{opacity: 0}}
-                        transition={{duration: 1}}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
                     >
                         <HeroSection
-                            sx={{
-                                backgroundImage: `url(${featuredEvents[currentEvent].image})`,
-                                marginTop: '64px'
-                            }}
+                            // sx={{
+                            //     backgroundImage: `url(${featuredEvents[currentEvent].image})`,
+                            //     marginTop: '64px'
+                            // }}
                         >
                             <HeroContent>
                                 <GlassCard>
                                     <motion.div
-                                        initial={{y: 30, opacity: 0}}
-                                        animate={{y: 0, opacity: 1}}
-                                        transition={{delay: 0.2, duration: 0.8}}
+                                        initial={{ y: 30, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.2, duration: 0.8 }}
                                     >
-                                        <Chip
+                                        {/* <Chip
                                             icon={featuredEvents[currentEvent].icon}
                                             label={featuredEvents[currentEvent].category}
                                             sx={{
@@ -479,25 +518,25 @@ const HomePage = () => {
                                                 fontSize: '1rem',
                                                 py: 2.5
                                             }}
-                                        />
-                                        <Typography variant="h2" component="h1" sx={{mb: 2, fontWeight: 'bold'}}>
-                                            {featuredEvents[currentEvent].title}
+                                        /> */}
+                                        <Typography variant="h2" component="h1" sx={{ mb: 2, fontWeight: 'bold' }}>
+                                            {featuredEvents[currentEvent]?.event.eventName}
                                         </Typography>
-                                        <Box sx={{display: 'flex', justifyContent: 'center', mb: 4}}>
-                                            <Box sx={{display: 'flex', alignItems: 'center', mr: 3}}>
-                                                <Event sx={{mr: 1}}/>
-                                                <Typography>{featuredEvents[currentEvent].date}</Typography>
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
+                                                <Event sx={{ mr: 1 }} />
+                                                <Typography>{featuredEvents[currentEvent]?.event.eventDate}</Typography>
                                             </Box>
-                                            <Box sx={{display: 'flex', alignItems: 'center'}}>
-                                                <LocationOn sx={{mr: 1}}/>
-                                                <Typography>{featuredEvents[currentEvent].location}</Typography>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <LocationOn sx={{ mr: 1 }} />
+                                                <Typography>{featuredEvents[currentEvent]?.event.eventLocation}</Typography>
                                             </Box>
                                         </Box>
                                         <CustomButton
                                             variant="contained"
                                             size="large"
                                             color="primary"
-                                            endIcon={<ArrowForward/>}
+                                            endIcon={<ArrowForward />}
                                             onClick={() => navigate('/tournament')}
                                         >
                                             Participate
@@ -509,12 +548,12 @@ const HomePage = () => {
                     </motion.div>
                 </AnimatePresence>
 
-                <Container sx={{my: 8}}>
+                <Container sx={{ my: 8 }}>
                     <motion.div
-                        initial={{opacity: 0, y: 50}}
-                        whileInView={{opacity: 1, y: 0}}
-                        transition={{duration: 0.8}}
-                        viewport={{once: true}}
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
                     >
                         <div>
                             <Typography variant="h1" gutterBottom>
@@ -528,30 +567,30 @@ const HomePage = () => {
                             We are proud of the results of our work and continue to develop the sports community.
                         </Typography>
 
-                        <Grid container spacing={4} sx={{mt: 2}}>
+                        <Grid container spacing={4} sx={{ mt: 2 }}>
                             <Grid item xs={12} md={7}>
-                                <Paper sx={{p: 3, height: '100%'}}>
+                                <Paper sx={{ p: 3, height: '100%' }}>
                                     <Typography variant="h6" gutterBottom>
                                         An increase in the number of tournaments and participants
                                     </Typography>
                                     <ResponsiveContainer width="100%" height={300}>
                                         <BarChart
                                             data={statisticsData}
-                                            margin={{top: 20, right: 30, left: 20, bottom: 5}}
+                                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                                         >
-                                            <CartesianGrid strokeDasharray="3 3"/>
-                                            <XAxis dataKey="name"/>
-                                            <YAxis/>
-                                            <Tooltip/>
-                                            <Bar dataKey="tournaments" fill="#8884d8" stackId="a"/>
-                                            <Bar dataKey="participants" fill="#82ca9d" stackId="b"/>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" />
+                                            <YAxis />
+                                            <Tooltip />
+                                            <Bar dataKey="tournaments" fill="#8884d8" stackId="a" />
+                                            <Bar dataKey="participants" fill="#82ca9d" stackId="b" />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </Paper>
                             </Grid>
 
                             <Grid item xs={12} md={5}>
-                                <Paper sx={{p: 3, height: '100%'}}>
+                                <Paper sx={{ p: 3, height: '100%' }}>
                                     <Typography variant="h6" gutterBottom>
                                         Distribution by sports
                                     </Typography>
@@ -564,20 +603,20 @@ const HomePage = () => {
                                                 outerRadius={80}
                                                 fill="#8884d8"
                                                 dataKey="value"
-                                                label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                             >
                                                 {sportTypeData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip/>
+                                            <Tooltip />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Paper>
                             </Grid>
                         </Grid>
 
-                        <Grid container spacing={4} sx={{mt: 4}}>
+                        <Grid container spacing={4} sx={{ mt: 4 }}>
                             <Grid item xs={12} sm={6} md={3}>
                                 <StatsCard elevation={6}>
                                     <Typography variant="h2" color="primary" fontWeight="bold">
@@ -625,17 +664,17 @@ const HomePage = () => {
                     </motion.div>
                 </Container>
 
-                <Container sx={{my: 8}}>
+                <Container sx={{ my: 8 }}>
                     <motion.div
-                        initial={{opacity: 0, y: 50}}
-                        whileInView={{opacity: 1, y: 0}}
-                        transition={{duration: 0.8}}
-                        viewport={{once: true}}
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
                     >
                         <Typography variant="h4" component="h2" align="center" gutterBottom fontWeight="bold">
                             All categories
                         </Typography>
-                        <Box sx={{borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2}}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2 }}>
                             <Tabs
                                 value={tabValue}
                                 onChange={handleTabChange}
@@ -643,25 +682,25 @@ const HomePage = () => {
                                 scrollButtons={isMobile ? "auto" : false}
                                 centered={!isMobile}
                             >
-                                <Tab label="All events" icon={<EmojiEvents/>} iconPosition="start"/>
-                                <Tab label="Football" icon={<SportsSoccer/>} iconPosition="start"/>
-                                <Tab label="Basketball" icon={<SportsBasketball/>} iconPosition="start"/>
-                                <Tab label="Volleyball" icon={<SportsVolleyball/>} iconPosition="start"/>
-                                <Tab label="Rugby" icon={<SportsRugby/>} iconPosition="start"/>
+                                <Tab label="All events" icon={<EmojiEvents />} iconPosition="start" />
+                                <Tab label="Football" icon={<SportsSoccer />} iconPosition="start" />
+                                <Tab label="Basketball" icon={<SportsBasketball />} iconPosition="start" />
+                                <Tab label="Volleyball" icon={<SportsVolleyball />} iconPosition="start" />
+                                <Tab label="Rugby" icon={<SportsRugby />} iconPosition="start" />
                             </Tabs>
                         </Box>
                     </motion.div>
                 </Container>
 
-                <Container sx={{my: 4}}>
+                <Container sx={{ my: 4 }}>
                     <Grid container spacing={3}>
                         {(showAll ? filteredEvents : filteredEvents.slice(0, 6)).map((event, index) => (
                             <Grid item xs={12} sm={6} md={4} key={event.id}>
                                 <motion.div
-                                    initial={{opacity: 0, y: 50}}
-                                    whileInView={{opacity: 1, y: 0}}
-                                    transition={{duration: 0.5, delay: index * 0.1}}
-                                    viewport={{once: true}}
+                                    initial={{ opacity: 0, y: 50 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                                    viewport={{ once: true }}
                                 >
                                     <FeatureCard>
                                         <CardMedia
@@ -675,30 +714,30 @@ const HomePage = () => {
                                                 label={event.category}
                                                 size="small"
                                                 color="primary"
-                                                sx={{mb: 1}}
+                                                sx={{ mb: 1 }}
                                             />
                                             <Typography gutterBottom variant="h6" component="div"
-                                                        sx={{fontWeight: 'bold'}}>
+                                                        sx={{ fontWeight: 'bold' }}>
                                                 {event.title}
                                             </Typography>
-                                            <Box sx={{display: 'flex', alignItems: 'center', mb: 1}}>
-                                                <Event fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                                <Event fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                                                 <Typography variant="body2" color="text.secondary">
                                                     {event.date}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{display: 'flex', alignItems: 'center'}}>
-                                                <LocationOn fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <LocationOn fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                                                 <Typography variant="body2" color="text.secondary">
                                                     {event.location}
                                                 </Typography>
                                             </Box>
                                         </CardContent>
-                                        <Box sx={{mt: 'auto', p: 2, display: 'flex', justifyContent: 'space-between'}}>
+                                        <Box sx={{ mt: 'auto', p: 2, display: 'flex', justifyContent: 'space-between' }}>
                                             <Button
                                                 size="small"
                                                 color="primary"
-                                                sx={{fontWeight: 'bold'}}
+                                                sx={{ fontWeight: 'bold' }}
                                                 onClick={() => navigate(`/tournament/${event.id}`)}
                                             >
                                                 About
@@ -707,7 +746,7 @@ const HomePage = () => {
                                                 variant="contained"
                                                 size="small"
                                                 color="primary"
-                                                sx={{fontWeight: 'bold'}}
+                                                sx={{ fontWeight: 'bold' }}
                                                 onClick={() => navigate('/tournament')}
                                             >
                                                 Participate
@@ -719,7 +758,7 @@ const HomePage = () => {
                         ))}
                     </Grid>
 
-                    <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                         <CustomButton
                             variant="outlined"
                             color="primary"
@@ -732,12 +771,12 @@ const HomePage = () => {
                     </Box>
                 </Container>
 
-                <Container sx={{my: 8}}>
+                <Container sx={{ my: 8 }}>
                     <motion.div
-                        initial={{opacity: 0, scale: 0.9}}
-                        whileInView={{opacity: 1, scale: 1}}
-                        transition={{duration: 0.8}}
-                        viewport={{once: true}}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
                     >
                         <CTASection>
                             <Container>
@@ -761,13 +800,13 @@ const HomePage = () => {
                                                     bgcolor: 'rgba(255, 255, 255, 0.8)'
                                                 }
                                             }}
-                                            endIcon={<ArrowForward/>}
+                                            endIcon={<ArrowForward />}
                                             onClick={() => navigate('/signup')}
                                         >
                                             Become an organizer
                                         </Button>
                                     </Grid>
-                                    <Grid item xs={12} md={5} sx={{textAlign: 'center'}}>
+                                    <Grid item xs={12} md={5} sx={{ textAlign: 'center' }}>
                                         <Box
                                             sx={{
                                                 p: 1,
@@ -792,7 +831,7 @@ const HomePage = () => {
                                                     }
                                                 }}
                                             >
-                                                <PlayArrow sx={{fontSize: 80}}/>
+                                                <PlayArrow sx={{ fontSize: 80 }} />
                                             </IconButton>
                                         </Box>
                                     </Grid>
@@ -803,15 +842,15 @@ const HomePage = () => {
                 </Container>
 
                 {/* --- Раздел 1: Highlight Reel --- */}
-                <HighlightReel/>
+                <HighlightReel />
 
                 {/* --- Раздел 2: Ambassadors --- */}
-                <Container sx={{py: 8}}>
+                <Container sx={{ py: 8 }}>
                     <motion.div
-                        initial={{opacity: 0, y: 30}}
-                        whileInView={{opacity: 1, y: 0}}
-                        transition={{duration: 0.8}}
-                        viewport={{once: true}}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
                     >
                         <Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
                             Our Ambassadors
@@ -819,14 +858,14 @@ const HomePage = () => {
                         <Typography variant="body1" align="center" color="text.secondary" paragraph>
                             People who inspire and lead our community
                         </Typography>
-                        <Grid container spacing={4} sx={{mt: 4}}>
+                        <Grid container spacing={4} sx={{ mt: 4 }}>
                             {ambassadors.map((amb, index) => (
                                 <Grid item xs={12} sm={6} md={4} key={index}>
                                     <motion.div
-                                        initial={{opacity: 0, y: 30}}
-                                        whileInView={{opacity: 1, y: 0}}
-                                        viewport={{once: true}}
-                                        transition={{delay: index * 0.2, duration: 0.6}}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.2, duration: 0.6 }}
                                     >
                                         <Card
                                             sx={{
@@ -844,12 +883,12 @@ const HomePage = () => {
                                             <Avatar
                                                 src={amb.image}
                                                 alt={amb.name}
-                                                sx={{width: 80, height: 80, mx: 'auto', mb: 2}}
+                                                sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
                                             />
                                             <Typography variant="h6" fontWeight="bold">{amb.name}</Typography>
                                             <Typography variant="body2" color="text.secondary">{amb.role}</Typography>
-                                            <Rating value={5} readOnly sx={{mt: 1}}/>
-                                            <Typography variant="body2" color="text.secondary" sx={{mt: 2}}>
+                                            <Rating value={5} readOnly sx={{ mt: 1 }} />
+                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                                                 "{amb.quote}"
                                             </Typography>
                                         </Card>
@@ -861,12 +900,12 @@ const HomePage = () => {
                 </Container>
 
                 {/* --- Раздел 3: How It Works --- */}
-                <Container sx={{py: 8}}>
+                <Container sx={{ py: 8 }}>
                     <motion.div
-                        initial={{opacity: 0, y: 30}}
-                        whileInView={{opacity: 1, y: 0}}
-                        transition={{duration: 0.8}}
-                        viewport={{once: true}}
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
                     >
                         <Typography variant="h4" align="center" fontWeight="bold" gutterBottom>
                             How It Works
@@ -874,14 +913,14 @@ const HomePage = () => {
                         <Typography variant="body1" align="center" color="text.secondary" paragraph>
                             Organizing and joining tournaments is easier than ever
                         </Typography>
-                        <Grid container spacing={4} justifyContent="center" sx={{mt: 4}}>
+                        <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>
                             {steps.map((label, index) => (
                                 <Grid item xs={12} sm={6} md={3} key={index}>
                                     <motion.div
-                                        initial={{opacity: 0, y: 30}}
-                                        whileInView={{opacity: 1, y: 0}}
-                                        viewport={{once: true}}
-                                        transition={{delay: index * 0.2, duration: 0.6}}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.2, duration: 0.6 }}
                                     >
                                         <Box
                                             sx={{
@@ -934,18 +973,18 @@ const HomePage = () => {
                                 <Typography variant="body2" color="text.secondary" paragraph>
                                     We create sports events that bring people together and inspire new achievements.
                                 </Typography>
-                                <Box sx={{mt: 2}}>
+                                <Box sx={{ mt: 2 }}>
                                     <IconButton color="primary">
-                                        <Facebook/>
+                                        <Facebook />
                                     </IconButton>
                                     <IconButton color="primary">
-                                        <Twitter/>
+                                        <Twitter />
                                     </IconButton>
                                     <IconButton color="primary">
-                                        <Instagram/>
+                                        <Instagram />
                                     </IconButton>
                                     <IconButton color="primary">
-                                        <YouTube/>
+                                        <YouTube />
                                     </IconButton>
                                 </Box>
                             </Grid>
@@ -972,7 +1011,7 @@ const HomePage = () => {
                                 <Typography variant="body2" color="text.secondary" paragraph>
                                     Get information about new events first
                                 </Typography>
-                                <Box sx={{display: 'flex', mt: 2}}>
+                                <Box sx={{ display: 'flex', mt: 2 }}>
                                     <CustomButton variant="contained" color="primary" fullWidth>
                                         Subscribe
                                     </CustomButton>
@@ -980,7 +1019,7 @@ const HomePage = () => {
                             </Grid>
                         </Grid>
 
-                        <Box sx={{mt: 6, pt: 3, borderTop: `1px solid ${theme.palette.divider}`, textAlign: 'center'}}>
+                        <Box sx={{ mt: 6, pt: 3, borderTop: `1px solid ${theme.palette.divider}`, textAlign: 'center' }}>
                             <Typography variant="body2" color="text.secondary">
                                 © 2025 MatchMaker. All rights reserved.
                             </Typography>
@@ -988,6 +1027,20 @@ const HomePage = () => {
                     </Container>
                 </Box>
             </Box>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={handleCloseSnackbar}
+                    severity={snackbar.severity}
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </AppTheme>
     );
 };

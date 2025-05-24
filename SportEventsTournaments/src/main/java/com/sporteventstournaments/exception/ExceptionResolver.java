@@ -115,6 +115,18 @@ public class ExceptionResolver {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(value = BusinessException.class)
+    ResponseEntity<HttpStatus> BusinessException(){
+        log.info("BusinessException exception!!!");
+        return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+    }
+
+    @ExceptionHandler(value = ResourceNotFoundException.class)
+    ResponseEntity<HttpStatus> ResourceNotFoundException(){
+        log.info("ResourceNotFoundException exception!!!");
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(value = PlayerNotFoundException.class)
     ResponseEntity<HttpStatus> PlayerNotFoundException(){
         log.info("PlayerNotFound exception!!!");

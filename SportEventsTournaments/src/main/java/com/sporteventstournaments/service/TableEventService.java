@@ -1,12 +1,10 @@
 package com.sporteventstournaments.service;
 
 import com.sporteventstournaments.domain.*;
-import com.sporteventstournaments.domain.dto.TableEventDTO;
 import com.sporteventstournaments.exception.EventNotFoundException;
 import com.sporteventstournaments.exception.ForbiddenOperationException;
 import com.sporteventstournaments.exception.InvalidOperationException;
 import com.sporteventstournaments.repository.EventRepository;
-import com.sporteventstournaments.repository.SingleEventParticipantRepository;
 import com.sporteventstournaments.repository.TableEventRepository;
 import com.sporteventstournaments.repository.TableEventTeamRepository;
 import com.sporteventstournaments.security.service.SecurityService;

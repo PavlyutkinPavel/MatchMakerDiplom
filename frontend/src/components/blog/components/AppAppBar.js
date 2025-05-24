@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {alpha, styled} from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,11 +13,11 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ColorModeIconDropdown from '../../shared-theme/ColorModeIconDropdown';
 import Sitemark from './SitemarkIcon';
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import AccountMenu from "../../UI/AccountMenu";
-import useApplicationStore from "../../utils/store/store";
+import useApplicationStore from 'store/useApplicationStore';
 
-const StyledToolbar = styled(Toolbar)(({theme}) => ({
+const StyledToolbar = styled(Toolbar)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -36,7 +36,8 @@ const StyledToolbar = styled(Toolbar)(({theme}) => ({
 export default function AppAppBar() {
     const [open, setOpen] = React.useState(false);
 
-    const { isAuthenticated} = useApplicationStore();
+
+    const isAuthenticated = useApplicationStore((state) => state.auth.isAuthenticated);
 
     const [openMenu, setOpenMenu] = React.useState(null);
 
@@ -66,13 +67,13 @@ export default function AppAppBar() {
         >
             <Container maxWidth="lg">
                 <StyledToolbar variant="dense" disableGutters onMouseLeave={handleCloseMenu}>
-                    <Box sx={{flexGrow: 1, display: 'flex', alignItems: 'center', px: 0}}>
-                        <Button component={Link} to="/" color="primary" sx={{height: '50px'}}>
-                            <Sitemark/>
+                    <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
+                        <Button component={Link} to="/" color="primary" sx={{ height: '50px' }}>
+                            <Sitemark />
                         </Button>
 
 
-                        <Box sx={{display: {xs: 'none', md: 'flex'}}}>
+                        <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                             {isAuthenticated
                                 ? (<>
                                     <Button
@@ -313,17 +314,17 @@ export default function AppAppBar() {
                     }
                     <Box
                         sx={{
-                            display: {xs: 'none', md: 'flex'},
+                            display: { xs: 'none', md: 'flex' },
                             gap: 1,
                             alignItems: 'center',
                         }}
                     >
-                        <ColorModeIconDropdown/>
+                        <ColorModeIconDropdown />
                     </Box>
-                    <Box sx={{display: {xs: 'flex', md: 'none'}, gap: 1}}>
-                        <ColorModeIconDropdown size="medium"/>
+                    <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 1 }}>
+                        <ColorModeIconDropdown size="medium" />
                         <IconButton aria-label="Menu button" onClick={toggleDrawer(true)}>
-                            <MenuIcon/>
+                            <MenuIcon />
                         </IconButton>
                         <Drawer
                             anchor="top"
@@ -341,7 +342,7 @@ export default function AppAppBar() {
                             }}
                         >
 
-                        <Box sx={{p: 2, backgroundColor: 'background.default'}}>
+                            <Box sx={{ p: 2, backgroundColor: 'background.default' }}>
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -349,7 +350,7 @@ export default function AppAppBar() {
                                     }}
                                 >
                                     <IconButton onClick={toggleDrawer(false)}>
-                                        <CloseRoundedIcon/>
+                                        <CloseRoundedIcon />
                                     </IconButton>
                                 </Box>
                                 <MenuItem sx={{
@@ -406,7 +407,7 @@ export default function AppAppBar() {
                                         color: 'white',
                                     },
                                 }}>Blog</MenuItem>
-                                <Divider sx={{my: 3}}/>
+                                <Divider sx={{ my: 3 }} />
                                 <MenuItem sx={{
                                     px: 2,
                                     py: 1.5,

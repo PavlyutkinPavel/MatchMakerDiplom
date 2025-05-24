@@ -1,0 +1,97 @@
+24-05-2025 10:32:34.875 [restartedMain] INFO  c.s.SportEventsTournamentsApplication.logStarting - Starting SportEventsTournamentsApplication using Java 17.0.7 with PID 10400 (C:\Users\User\IdeaProjects\MatchMakerDiplom\SportEventsTournaments\target\classes started by User in C:\Users\User\IdeaProjects\MatchMakerDiplom\SportEventsTournaments)
+24-05-2025 10:32:34.886 [restartedMain] INFO  c.s.SportEventsTournamentsApplication.logStartupProfileInfo - No active profile set, falling back to 1 default profile: "default"
+24-05-2025 10:32:34.998 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor.logTo - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+24-05-2025 10:32:35.000 [restartedMain] INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor.logTo - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+24-05-2025 10:32:37.058 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+24-05-2025 10:32:37.313 [restartedMain] INFO  o.s.d.r.c.RepositoryConfigurationDelegate.registerRepositoriesIn - Finished Spring Data repository scanning in 241 ms. Found 28 JPA repository interfaces.
+24-05-2025 10:32:38.778 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer.initialize - Tomcat initialized with port(s): 8080 (http)
+24-05-2025 10:32:38.800 [restartedMain] INFO  o.a.catalina.core.StandardService.log - Starting service [Tomcat]
+24-05-2025 10:32:38.801 [restartedMain] INFO  o.a.catalina.core.StandardEngine.log - Starting Servlet engine: [Apache Tomcat/10.1.15]
+24-05-2025 10:32:38.924 [restartedMain] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log - Initializing Spring embedded WebApplicationContext
+24-05-2025 10:32:38.925 [restartedMain] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext.prepareWebApplicationContext - Root WebApplicationContext: initialization completed in 3923 ms
+24-05-2025 10:32:39.192 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource.getConnection - HikariPool-1 - Starting...
+24-05-2025 10:32:39.551 [restartedMain] INFO  com.zaxxer.hikari.pool.HikariPool.checkFailFast - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5d97c7da
+24-05-2025 10:32:39.555 [restartedMain] INFO  com.zaxxer.hikari.HikariDataSource.getConnection - HikariPool-1 - Start completed.
+24-05-2025 10:32:39.657 [restartedMain] INFO  o.h.jpa.internal.util.LogHelper.logPersistenceUnitInformation - HHH000204: Processing PersistenceUnitInfo [name: default]
+24-05-2025 10:32:39.802 [restartedMain] INFO  org.hibernate.Version.logVersion - HHH000412: Hibernate ORM core version 6.2.1.Final
+24-05-2025 10:32:39.808 [restartedMain] INFO  org.hibernate.cfg.Environment.<clinit> - HHH000406: Using bytecode reflection optimizer
+24-05-2025 10:32:40.272 [restartedMain] INFO  o.h.b.i.BytecodeProviderInitiator.buildBytecodeProvider - HHH000021: Bytecode provider name : bytebuddy
+24-05-2025 10:32:40.656 [restartedMain] INFO  o.s.o.j.p.SpringPersistenceUnitInfo.addTransformer - No LoadTimeWeaver setup: ignoring JPA class transformer
+24-05-2025 10:32:40.817 [restartedMain] INFO  SQL dialect.logSelectedDialect - HHH000400: Using dialect: org.hibernate.dialect.PostgreSQLDialect, version: org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$DialectResolutionInfoImpl@79d26719
+24-05-2025 10:32:41.600 [restartedMain] INFO  o.h.b.i.BytecodeProviderInitiator.buildBytecodeProvider - HHH000021: Bytecode provider name : bytebuddy
+24-05-2025 10:32:43.653 [restartedMain] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator.initiateService - HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+24-05-2025 10:32:43.660 [restartedMain] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean.buildNativeEntityManagerFactory - Initialized JPA EntityManagerFactory for persistence unit 'default'
+24-05-2025 10:32:44.134 [restartedMain] INFO  o.s.d.j.r.query.QueryEnhancerFactory.<clinit> - Hibernate is in classpath; If applicable, HQL parser will be used.
+24-05-2025 10:32:47.644 [restartedMain] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration.openEntityManagerInViewInterceptor - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+24-05-2025 10:32:48.054 [restartedMain] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping.<init> - Adding welcome page: class path resource [static/index.html]
+24-05-2025 10:32:48.334 [restartedMain] INFO  o.s.s.web.DefaultSecurityFilterChain.<init> - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@72fd65af, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@61906e64, org.springframework.security.web.context.SecurityContextHolderFilter@5341519f, org.springframework.security.web.header.HeaderWriterFilter@a5a7636, org.springframework.web.filter.CorsFilter@1e6fd2ca, org.springframework.security.web.authentication.logout.LogoutFilter@51ed09b6, com.sporteventstournaments.security.filter.JwtAuthenticationFilter@366ffa2, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@4445efec, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@34afb0c7, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@17082d9, org.springframework.security.web.session.SessionManagementFilter@4178d9a4, org.springframework.security.web.access.ExceptionTranslationFilter@15f3a60, org.springframework.security.web.access.intercept.AuthorizationFilter@1fe193ff]
+24-05-2025 10:32:48.824 [restartedMain] WARN  o.s.s.c.a.web.builders.WebSecurity.performBuild - You are asking Spring Security to ignore Mvc [pattern='/v3/api-docs/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+24-05-2025 10:32:48.824 [restartedMain] INFO  o.s.s.web.DefaultSecurityFilterChain.<init> - Will not secure Mvc [pattern='/v3/api-docs/**']
+24-05-2025 10:32:48.825 [restartedMain] WARN  o.s.s.c.a.web.builders.WebSecurity.performBuild - You are asking Spring Security to ignore Mvc [pattern='/swagger-ui/**']. This is not recommended -- please use permitAll via HttpSecurity#authorizeHttpRequests instead.
+24-05-2025 10:32:48.825 [restartedMain] INFO  o.s.s.web.DefaultSecurityFilterChain.<init> - Will not secure Mvc [pattern='/swagger-ui/**']
+24-05-2025 10:32:48.924 [restartedMain] INFO  o.s.b.d.a.OptionalLiveReloadServer.startServer - LiveReload server is running on port 35729
+24-05-2025 10:32:49.028 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer.start - Tomcat started on port(s): 8080 (http) with context path ''
+24-05-2025 10:32:49.032 [restartedMain] INFO  o.s.m.s.b.SimpleBrokerMessageHandler.info - Starting...
+24-05-2025 10:32:49.034 [restartedMain] INFO  o.s.m.s.b.SimpleBrokerMessageHandler.info - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@7bc61019]]
+24-05-2025 10:32:49.036 [restartedMain] INFO  o.s.m.s.b.SimpleBrokerMessageHandler.info - Started.
+24-05-2025 10:32:49.057 [restartedMain] INFO  c.s.SportEventsTournamentsApplication.logStarted - Started SportEventsTournamentsApplication in 14.977 seconds (process running for 16.568)
+24-05-2025 10:33:23.641 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/].log - Initializing Spring DispatcherServlet 'dispatcherServlet'
+24-05-2025 10:33:23.643 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet.initServletBean - Initializing Servlet 'dispatcherServlet'
+24-05-2025 10:33:23.648 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet.initServletBean - Completed initialization in 4 ms
+24-05-2025 10:33:32.603 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:33:47.178 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:33:47.365 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:33:47.468 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats.lambda$initLoggingTask$0 - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+24-05-2025 10:33:59.200 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:34:55.595 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:34:56.028 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:34:56.368 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:35:02.875 [http-nio-8080-exec-4] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:36:37.837 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:36:38.033 [http-nio-8080-exec-9] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:36:38.935 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:36:45.760 [http-nio-8080-exec-3] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:26.248 [http-nio-8080-exec-6] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:26.403 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:44.808 [http-nio-8080-exec-1] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:45.209 [http-nio-8080-exec-3] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:45.490 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:51.475 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:51.721 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:37:58.321 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:20.488 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:30.939 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:33.620 [http-nio-8080-exec-1] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:35.845 [http-nio-8080-exec-3] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:39.803 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:38:42.062 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:42:46.386 [http-nio-8080-exec-1] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:42:55.759 [http-nio-8080-exec-4] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:43:27.299 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 10:43:27.651 [http-nio-8080-exec-9] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 11:03:47.481 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats.lambda$initLoggingTask$0 - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+24-05-2025 11:33:47.487 [MessageBroker-2] INFO  o.s.w.s.c.WebSocketMessageBrokerStats.lambda$initLoggingTask$0 - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 3, active threads = 1, queued tasks = 0, completed tasks = 2]
+24-05-2025 12:57:48.711 [HikariPool-1 housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool.run - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1h13m7s808ms61µs800ns).
+24-05-2025 12:59:15.375 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:15.736 [http-nio-8080-exec-4] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:17.982 [http-nio-8080-exec-6] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:20.745 [http-nio-8080-exec-8] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:25.442 [http-nio-8080-exec-1] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:25.765 [http-nio-8080-exec-3] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:31.084 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:32.314 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:33.897 [http-nio-8080-exec-9] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:35.342 [http-nio-8080-exec-1] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 12:59:36.889 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:00:18.822 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:00:20.664 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:00:31.070 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:00:31.400 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:03.826 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:04.225 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:07.272 [http-nio-8080-exec-9] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:11.611 [http-nio-8080-exec-10] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:13.931 [http-nio-8080-exec-2] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:16.616 [http-nio-8080-exec-5] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:18.887 [http-nio-8080-exec-7] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
+24-05-2025 13:01:20.176 [http-nio-8080-exec-9] INFO  c.s.s.filter.JwtAuthenticationFilter.doFilterInternal - Authenticated user with email: paulllpp1092@gmail.com
