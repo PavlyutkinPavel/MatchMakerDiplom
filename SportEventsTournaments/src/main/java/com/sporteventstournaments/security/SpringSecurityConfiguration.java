@@ -74,6 +74,7 @@ public class SpringSecurityConfiguration {
         configuration.addAllowedOrigin("http://localhost:3001");
         configuration.addAllowedOrigin("http://localhost:3002");
         configuration.addAllowedOrigin("http://localhost:3003");
+        configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);

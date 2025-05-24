@@ -15,30 +15,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
-@Entity(name = "messages")
-@Component
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Getter
+@Setter
 public class Message {
-    @Id
-    @SequenceGenerator(name = "messageSeqGen", sequenceName = "messages_id_seq", allocationSize = 1)
-    @GeneratedValue(generator = "messageSeqGen")
-    private Long id;
 
-    @Column(name = "message_content")
-    private String content;
-
-    @Column(name = "sender")
     private String sender;
+    private String content;
+    private LocalDateTime timeStamp;
 
-    @Column(name = "message_type")
-    @Enumerated(EnumType.STRING)
-    private MessageType type;
-
-    @JoinColumn(name = "chat_id")
-    private Long chatId;
-
+    public Message(String sender, String content) {
+        this.sender = sender;
+        this.content = content;
+        this.timeStamp = LocalDateTime.now();
+    }
 }

@@ -5,6 +5,10 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/SportEventsTournaments/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/pom.xml" />
+        <option value="$PROJECT_DIR$/react-spring-messenger-project-master/backend/storage/pom.xml" />
+        <option value="$PROJECT_DIR$/react-spring-messenger-project-master/backend/cache/pom.xml" />
+        <option value="$PROJECT_DIR$/react-spring-messenger-project-master/backend/pom.xml" />
       </list>
     </option>
   </component>

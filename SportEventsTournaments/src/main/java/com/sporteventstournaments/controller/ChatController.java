@@ -2,8 +2,11 @@ package com.sporteventstournaments.controller;
 
 import com.sporteventstournaments.domain.Chat;
 import com.sporteventstournaments.domain.Message;
+import com.sporteventstournaments.domain.Room;
 import com.sporteventstournaments.domain.User;
 import com.sporteventstournaments.domain.dto.ChatDTO;
+import com.sporteventstournaments.playload.MessageRequest;
+import com.sporteventstournaments.repository.RoomRepository;
 import com.sporteventstournaments.security.service.SecurityService;
 import com.sporteventstournaments.service.ChatService;
 import com.sporteventstournaments.service.UserService;
@@ -12,29 +15,64 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 @Tag(name = "Chat Controller", description = "Main controller, makes all operations with chats")
-@RestController
+@Controller
 @RequestMapping("/chat")
-@AllArgsConstructor
+@CrossOrigin("http://localhost:3000")
 public class ChatController {
-    private final ChatService chatService;
+
+    private RoomRepository roomRepository;
+
+    public ChatController(RoomRepository roomRepository) {
+        this.roomRepository = roomRepository;
+    }
+
+    //for sending and receiving messages
+    @MessageMapping("/sendMessage/{roomId}")// /app/sendMessage/roomId
+    @SendTo("/topic/room/{roomId}")//subscribe
+    public Message sendMessage(
+            @DestinationVariable String roomId,
+            @RequestBody MessageRequest request
+    ) {
+
+        Room room = roomRepository.findByRoomId(request.getRoomId());
+        Message message = new Message();
+        message.setContent(request.getContent());
+        message.setSender(request.getSender());
+        message.setTimeStamp(LocalDateTime.now());
+        if (room != null) {
+            room.getMessages().add(message);
+            roomRepository.save(room);
+        } else {
+            throw new RuntimeException("room not found !!");
+        }
+
+        return message;
+
+
+    }
+
+    /*private final ChatService chatService;
     private final SecurityService securityService;
 
     private final UserService userService;
+
+    public ChatController(ChatService chatService, SecurityService securityService, UserService userService) {
+        this.chatService = chatService;
+        this.securityService = securityService;
+        this.userService = userService;
+    }
 
     @Operation(summary = "get all chats in app")
     @GetMapping
@@ -187,10 +225,10 @@ public class ChatController {
     @Operation(summary = "users can leave chat")
     @DeleteMapping("/{chatId}/leave_chat/{username}")
     public ResponseEntity<HttpStatus> leaveChat(@PathVariable Long chatId, @PathVariable String username, Principal principal) {
-        if(principal == null){
+        if (principal == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         deleteUser(chatId, securityService.getUserIdByLogin(username), principal);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    }*/
 }

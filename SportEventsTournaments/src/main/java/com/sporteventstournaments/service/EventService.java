@@ -51,6 +51,7 @@ public class EventService {
         event.setEventType(eventDTO.getEventType());
         event.setCreatedBy(userId);
         event.setCreatedAt(LocalDateTime.now());
+        event.setSportType(eventDTO.getSportType());
 
         return eventRepository.save(event);
     }
@@ -72,6 +73,7 @@ public class EventService {
         existingEvent.setEventName(eventDTO.getEventName());
         existingEvent.setEventDate(eventDTO.getEventDate());
         existingEvent.setEventLocation(eventDTO.getEventLocation());
+        existingEvent.setSportType(eventDTO.getSportType());
         // EventType should not be changed as it would affect the related specific event tables
 
         return eventRepository.save(existingEvent);

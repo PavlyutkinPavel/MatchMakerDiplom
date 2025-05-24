@@ -42,6 +42,13 @@ public class SingleEventController {
         private List<Long> userIds;
     }
 
+    @Data
+    public static class UpdateSingleParticipantRequest{
+        private Boolean accepted;
+        private Boolean invitationSent;
+    }
+
+
     // ================ MAIN ENDPOINTS ================
 
     @Operation(summary = "Get all single events (authorized users only)")
@@ -150,6 +157,22 @@ public class SingleEventController {
         SingleEventParticipant participant = singleEventService.addParticipant(eventId, userId, principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(participant);
     }
+
+    @Operation(summary = "Update a single participant status")
+    @PutMapping("/{eventId}/participant/{userId}")
+    public ResponseEntity<SingleEventParticipant> updateParticipant(
+            @PathVariable Long eventId,
+            @PathVariable Long userId,
+            @RequestBody UpdateSingleParticipantRequest request,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        SingleEventParticipant participant = singleEventService.updateParticipant(eventId, userId, request.accepted, request.invitationSent, principal);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(participant);
+    }
+
 
     @Operation(summary = "Add multiple participants to event")
     @PostMapping("/{eventId}/participants")

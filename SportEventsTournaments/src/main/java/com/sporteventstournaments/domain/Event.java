@@ -40,7 +40,14 @@ public class Event {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "sport_type")
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private SportType sportType;
+
     public enum EventType {
         SINGLE, TWO_TEAMS, TABLE, PLAYOFF
     }
+    public enum SportType {
+        FOOTBALL, VOLLEYBALL, BASKETBALL, HOCKEY, TENNIS    }
 }

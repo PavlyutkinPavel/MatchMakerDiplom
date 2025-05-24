@@ -17,6 +17,7 @@ import {
     Send as SendIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import JoinCreateChat from "../../../../JoinCreateChat";
 
 // Mock API endpoints (you'll replace these with real endpoints)
 const API_URL = "http://localhost:8080";
@@ -25,6 +26,7 @@ const getHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
 });
+
 
 
 const mockFriends = [
@@ -267,10 +269,11 @@ export const Chat = () => {
                 </Box>
 
                 {/* Chat area */}
-                <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <JoinCreateChat/>
+                {/*<Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                     {selectedFriend ? (
                         <>
-                            {/* Chat header */}
+                             Chat header
                             <Box sx={{
                                 p: 2,
                                 borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
@@ -296,7 +299,7 @@ export const Chat = () => {
                                 </Box>
                             </Box>
 
-                            {/* Messages */}
+                             Messages
                             <Box sx={{
                                 flexGrow: 1,
                                 p: 2,
@@ -330,7 +333,7 @@ export const Chat = () => {
                                 <div ref={messagesEndRef} />
                             </Box>
 
-                            {/* Message input */}
+                             Message input
                             <Box sx={{
                                 p: 2,
                                 borderTop: '1px solid rgba(0, 0, 0, 0.12)',
@@ -362,7 +365,7 @@ export const Chat = () => {
                             <Typography color="textSecondary">Select a friend to start chatting</Typography>
                         </Box>
                     )}
-                </Box>
+                </Box>*/}
             </Paper>
         </Box>
     );

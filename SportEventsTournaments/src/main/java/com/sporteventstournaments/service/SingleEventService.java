@@ -31,6 +31,7 @@ public class SingleEventService {
     private final SingleEventParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final SecurityService securityService;
+    private final SingleEventParticipantRepository singleEventParticipantRepository;
 
     public List<SingleEvent> getAllSingleEvents() {
         return singleEventRepository.findAll();
@@ -113,6 +114,40 @@ public class SingleEventService {
 
         return singleEventRepository.saveAndFlush(existingSingleEvent);
     }
+
+    @Transactional
+    public SingleEventParticipant updateParticipant(Long eventId, Long participantId,
+                                                    Boolean accepted, Boolean invitationSent, Principal principal) {
+        if (principal == null) {
+            throw new ForbiddenOperationException("User must be authenticated");
+        }
+
+        // Проверка существования события
+        SingleEvent existingSingleEvent = singleEventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Event with id " + eventId + " not found"));
+
+        // Проверка существования пользователя
+        User user = userRepository.findById(participantId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // Проверка существования участника
+        SingleEventParticipantId id = new SingleEventParticipantId(eventId, participantId);
+        SingleEventParticipant singleEventParticipant = singleEventParticipantRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException("Participant not found in event"));
+
+        // Проверка прав пользователя
+        Long userId = securityService.getUserIdByLogin(principal.getName());
+        if (!existingSingleEvent.getEvent().getCreatedBy().equals(userId)
+                && !securityService.checkIfAdmin(principal.getName())) {
+            throw new ForbiddenOperationException("Only the event creator or admin can update this single event");
+        }
+
+        // Обновление
+        singleEventParticipant.setAccepted(accepted);
+        singleEventParticipant.setInvitationSent(invitationSent);
+        return singleEventParticipantRepository.saveAndFlush(singleEventParticipant);
+    }
+
 
     @Transactional
     public SingleEvent updateEventStatus(Long id, SingleEvent.SingleEventStatus status, Principal principal) {

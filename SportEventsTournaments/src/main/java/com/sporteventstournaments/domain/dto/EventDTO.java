@@ -11,4 +11,5 @@ public class EventDTO {
     private LocalDateTime eventDate;
     private String eventLocation;
     private Event.EventType eventType;
+    private Event.SportType sportType;
 }

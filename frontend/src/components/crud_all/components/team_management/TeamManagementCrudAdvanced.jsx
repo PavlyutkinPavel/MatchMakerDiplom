@@ -40,6 +40,7 @@ import Chat from "./components/Chat";
 import Emails from "./components/Emails";
 import ParticipantsManager from "./components/ParticipantsManager";
 import SportsStatistics from "./components/SportsStatistics";
+import JoinCreateChat from "../../../JoinCreateChat";
 
 const routes = {
     team: "/team",
