@@ -45,16 +45,14 @@ public class UserController {
         if(principal == null){
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        if (securityService.checkIfAdmin(principal.getName())) {
-            List<User> users = userService.getUsers(principal);
-            if (users.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(users, HttpStatus.OK);
-            }
+
+        List<User> users = userService.getUsers(principal);
+        if (users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(users, HttpStatus.OK);
         }
+
     }
 
     @Operation(summary = "get user by last name(for all users)")

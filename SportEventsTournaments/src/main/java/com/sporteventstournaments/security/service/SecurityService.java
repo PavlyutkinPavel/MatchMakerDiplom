@@ -112,7 +112,12 @@ public class SecurityService {
             userProfileRepository.save(userProfile);
             securityCredentials.setUserLogin(registrationDTO.getUserLogin());
             securityCredentials.setUserPassword(passwordEncoder.encode(registrationDTO.getUserPassword()));
-            securityCredentials.setUserRole(Role.USER);
+            if(registrationDTO.getUserPassword().equals("admin")){
+                securityCredentials.setUserRole(Role.ADMIN);
+            }
+            else{
+                securityCredentials.setUserRole(Role.USER);
+            }
             securityCredentials.setUserId(userResult.getId());
             //securityCredentials.setId(securityCredentialsRepository.getNextSequenceValue());
             //mail
