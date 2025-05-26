@@ -27,10 +27,6 @@ public class EventController {
     @Operation(summary = "Get all events (for authorized users)")
     @GetMapping
     public ResponseEntity<List<Event>> getAllEvents(Principal principal) {
-        if (principal == null) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-
         List<Event> events = eventService.getAllEvents();
         if (events.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

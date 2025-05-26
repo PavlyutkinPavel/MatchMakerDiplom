@@ -1,5 +1,6 @@
 package com.sporteventstournaments.service;
 
+import com.sporteventstournaments.controller.TeamController;
 import com.sporteventstournaments.domain.Team;
 import com.sporteventstournaments.domain.TeamType;
 import com.sporteventstournaments.domain.User;
@@ -27,7 +28,9 @@ public class TeamService {
     private final UserRepository userRepository;
     private final UserTeamRelationRepository userTeamRelationRepository;
     private final SecurityService securityService;
-    private final Team team;
+    private Team team;
+    private UserTeamRelation userTeamRelation;
+    private User user;
 
     public List<Team> getTeams(Principal principal) {
         if(securityService.checkIfAdmin(principal.getName())){
@@ -71,23 +74,39 @@ public class TeamService {
         return userTeamRelationRepository.findAll();
     }
 
+    public List<UserTeamRelation> getTeamMembersForTeam(Long teamId) {
+
+        List<UserTeamRelation> userTeamRelationList =  userTeamRelationRepository.findAllUsersByTeamId(teamId);
+        System.out.println(userTeamRelationList);
+        return userTeamRelationList;
+    }
+
     public UserTeamRelation getTeamMember(Long id) {
         return userTeamRelationRepository.findById(id).orElseThrow(UserNotFoundException::new);
     }
 
-    public ResponseEntity<HttpStatus> createTeamMember(UserTeamRelation userTeamRelation, Principal principal) {
+    public ResponseEntity<HttpStatus> createTeamMember(TeamController.UserTeamRelationDTO userTeamRelationDTO, Principal principal) {
+        team = teamRepository.findById(userTeamRelationDTO.getTeamId()).orElseThrow(TeamNotFoundException::new);
+        user = userRepository.findById(userTeamRelationDTO.getUserId()).orElseThrow(UserNotFoundException::new);
+        userTeamRelation.setTeamId(userTeamRelationDTO.getTeamId());
+        userTeamRelation.setUserId(userTeamRelationDTO.getUserId());
+        userTeamRelation.setAcceptedInvite(userTeamRelationDTO.getAcceptedInvite());
+        userTeamRelation.setUsername(userTeamRelationDTO.getUsername());
+        userTeamRelation.setPosition(userTeamRelationDTO.getPosition());
+        userTeamRelation.setStats(userTeamRelationDTO.getStats());
+        userTeamRelation.setTeamRole(UserTeamRelation.TeamRole.valueOf(userTeamRelationDTO.getTeamRole()));
         userTeamRelationRepository.save(userTeamRelation);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @Transactional
-    public ResponseEntity<HttpStatus> deleteTeamMemberById(Long id, Long teamId, Principal principal){
+    public ResponseEntity<HttpStatus> deleteTeamMemberById(Long teamId, Long userId, Principal principal){
         User currentUser = userRepository.findByUserLogin(principal.getName()).orElseThrow(UserNotFoundException::new);
         Team team = teamRepository.findById(teamId).orElseThrow(TeamNotFoundException::new);
         if (team.getCreatorId() != currentUser.getId()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }else{
-            userTeamRelationRepository.deleteById(id);
+            userTeamRelationRepository.deleteUserTeamRelationByUserIdAndTeamId(teamId, userId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }

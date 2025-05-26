@@ -1,6 +1,7 @@
 package com.sporteventstournaments.repository;
 
 import com.sporteventstournaments.domain.Team;
+import com.sporteventstournaments.domain.User;
 import com.sporteventstournaments.domain.UserChatRelation;
 import com.sporteventstournaments.domain.UserTeamRelation;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,6 +24,10 @@ public interface UserTeamRelationRepository extends JpaRepository<UserTeamRelati
             "WHERE luc.user_id = :userId")
     List<Long> findAllTeamsByUserId(Long userId);
 
+    @Query(nativeQuery = true, value = "SELECT * FROM l_users_teams  " +
+            "WHERE team_id = :teamId")
+    List<UserTeamRelation> findAllUsersByTeamId(Long teamId);
+
     @Query("SELECT COALESCE(MAX(id), 0) + 1 FROM l_users_teams")
     Long getNextId();
 
@@ -31,5 +36,8 @@ public interface UserTeamRelationRepository extends JpaRepository<UserTeamRelati
     @Transactional
     @Query(nativeQuery = true, value = "INSERT INTO l_users_teams (id, team_id, user_id) VALUES (?1, ?2, ?3)")
     void saveEntrance(Long id, Long teamId, Long userId);
+
+
+    void deleteUserTeamRelationByUserIdAndTeamId(Long userId, Long teamId);
 
 }

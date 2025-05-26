@@ -1,12 +1,6 @@
 package com.sporteventstournaments.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +15,30 @@ public class UserTeamRelation {
     @GeneratedValue(generator = "userChatSeqGen")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "team_id", referencedColumnName = "id")
-    private Team team;
+    @Column(name = "team_id")
+    private Long teamId;
 
     @Column(name = "accepted_invite")
     private Boolean acceptedInvite;
+
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "position")
+    private String position;
+
+    @Column(name = "stats")
+    private String stats;
+
+    @Column(name = "team_role")
+    @Enumerated(EnumType.STRING)
+    private TeamRole teamRole;
+
+    public enum TeamRole {
+        PLAYER, COACH, MANAGER, MEDICAL_STUFF
+    }
+
 }
