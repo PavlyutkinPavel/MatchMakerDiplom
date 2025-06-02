@@ -18,7 +18,6 @@ import { toISOString, fromISOToLocal } from 'helpers/dateUtils';
 import AppTheme from 'components/shared-theme/AppTheme';
 import { Snackbar } from '@mui/material';
 
-// ======= STYLED COMPONENTS ========
 const EventCard = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(3),
     borderRadius: theme.shape.borderRadius * 2,
@@ -43,7 +42,6 @@ const StatusBadge = styled(Badge)(({ theme, status }) => ({
     },
 }));
 
-// ======= CONSTANTS ========
 const SPORT_TYPES = [
     { value: 'FOOTBALL', label: 'Football', icon: <SportsSoccer /> },
     { value: 'BASKETBALL', label: 'Basketball', icon: <SportsBasketball /> },
@@ -52,7 +50,13 @@ const SPORT_TYPES = [
     { value: 'VOLLEYBALL', label: 'Volleyball', icon: <SportsVolleyball /> },
 ];
 
-// ======= MAIN COMPONENT ========
+const STATUS_OPTIONS = [
+    { value: 'PENDING', label: 'Pending' },
+    { value: 'SCHEDULED', label: 'Scheduled' },
+    { value: 'COMPLETED', label: 'Completed' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+];
+
 export default function SingleEventManager() {
     const store = useApplicationStore();
     const [tabValue, setTabValue] = useState(0);
@@ -65,15 +69,17 @@ export default function SingleEventManager() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [status, setStatus] = useState('PENDING');
 
-    // Form states
     const [eventName, setEventName] = useState('');
     const [eventDate, setEventDate] = useState('');
     const [eventLocation, setEventLocation] = useState('');
     const [sportType, setSportType] = useState('FOOTBALL');
     const [maxParticipants, setMaxParticipants] = useState(2);
     const [selectedUsers, setSelectedUsers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [userSearchTerm, setUserSearchTerm] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
@@ -90,15 +96,20 @@ export default function SingleEventManager() {
     useEffect(() => {
         if (selectedEvent) {
             loadParticipants(selectedEvent.id);
-            if (editMode) {
-                setEventName(selectedEvent.event.eventName);
-                setEventDate(selectedEvent.event.eventDate.split('T')[0]);
-                setEventLocation(selectedEvent.event.eventLocation);
-                setSportType(selectedEvent.event.sportType || 'FOOTBALL');
-                setMaxParticipants(selectedEvent.maxParticipants);
-            }
+            setEventName(selectedEvent.event.eventName);
+            setEventDate(selectedEvent.event.eventDate.split('T')[0]);
+            setEventLocation(selectedEvent.event.eventLocation);
+            setSportType(selectedEvent.event.sportType || 'FOOTBALL');
+            setMaxParticipants(selectedEvent.maxParticipants);
+            setStatus(selectedEvent.status);
         }
     }, [selectedEvent, editMode]);
+
+    const filteredEvents = events.filter(event => {
+        const matchesStatus = statusFilter === 'ALL' || event.status === statusFilter;
+        const matchesSearch = event.event.eventName.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
 
     const loadEvents = async () => {
         try {
@@ -169,32 +180,23 @@ export default function SingleEventManager() {
                 sportType
             });
 
-            await store.singleEvent.update(selectedEvent.id, {
-                maxParticipants
+            const updatedEvent = await store.singleEvent.update(selectedEvent.id, {
+                maxParticipants,
+                status
             });
 
-            const currentParticipants = participants.map(p => p.user.id);
-            const newParticipants = selectedUsers;
-
-            const participantsToAdd = newParticipants.filter(
-                id => !currentParticipants.includes(id)
-            );
-
-            const participantsToRemove = currentParticipants.filter(
-                id => !newParticipants.includes(id)
-            );
-
-            if (participantsToAdd.length > 0) {
-                await store.singleEvent.addParticipants(selectedEvent.id, participantsToAdd);
-            }
-
-            if (participantsToRemove.length > 0) {
-                await Promise.all(
-                    participantsToRemove.map(userId =>
-                        store.singleEvent.removeParticipant(selectedEvent.id, userId)
-                    )
-                );
-            }
+            setSelectedEvent({
+                ...selectedEvent,
+                event: {
+                    ...selectedEvent.event,
+                    eventName,
+                    eventDate: toISOString(eventDate),
+                    eventLocation,
+                    sportType
+                },
+                maxParticipants,
+                status
+            });
 
             showSnackbar('Event updated successfully!', 'success');
             setEditMode(false);
@@ -224,13 +226,13 @@ export default function SingleEventManager() {
             if (!selectedEvent?.id) {
                 throw new Error('No event selected');
             }
-            
+
             await store.singleEvent.updateParticipantStatus(
                 selectedEvent.id,
                 participantId,
                 { accepted }
             );
-            
+
             const updatedParticipants = participants.map(p =>
                 p.user.id === participantId ? { ...p, accepted } : p
             );
@@ -279,8 +281,8 @@ export default function SingleEventManager() {
     };
 
     const filteredUsers = users.filter(user =>
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.userLogin.toLowerCase().includes(searchTerm.toLowerCase())
+        `${user.firstName} ${user.lastName}`.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+        user.userLogin.toLowerCase().includes(userSearchTerm.toLowerCase())
     );
 
     const renderSportType = (type) => {
@@ -313,9 +315,33 @@ export default function SingleEventManager() {
 
                 {tabValue === 0 && (
                     <Box>
-                        <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <SportsSoccer color="primary" /> Single Events
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <SportsSoccer color="primary" /> Single Events
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    label="Search Events"
+                                    size="small"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                                    <InputLabel>Status</InputLabel>
+                                    <Select
+                                        value={statusFilter}
+                                        onChange={(e) => setStatusFilter(e.target.value)}
+                                        label="Status"
+                                    >
+                                        <MenuItem value="ALL">All Statuses</MenuItem>
+                                        {STATUS_OPTIONS.map(option => (
+                                            <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </Box>
 
                         <TableContainer component={Paper}>
                             <Table>
@@ -331,7 +357,7 @@ export default function SingleEventManager() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {events.map((event) => (
+                                    {filteredEvents.map((event) => (
                                         <TableRow key={event.id} hover>
                                             <TableCell>{event.event.eventName}</TableCell>
                                             <TableCell>{fromISOToLocal(event.event.eventDate)}</TableCell>
@@ -346,8 +372,9 @@ export default function SingleEventManager() {
                                                 <Chip
                                                     label={event.status}
                                                     color={
-                                                        event.status === 'ACTIVE' ? 'success' :
-                                                            event.status === 'PENDING' ? 'warning' : 'default'
+                                                        event.status === 'SCHEDULED' ? 'success' :
+                                                            event.status === 'COMPLETED' ? 'primary' :
+                                                                event.status === 'PENDING' ? 'warning' : 'default'
                                                     }
                                                 />
                                             </TableCell>
@@ -481,6 +508,23 @@ export default function SingleEventManager() {
                                             </Select>
                                         </FormControl>
 
+                                        {editMode && (
+                                            <FormControl fullWidth margin="normal">
+                                                <InputLabel>Status</InputLabel>
+                                                <Select
+                                                    value={status}
+                                                    onChange={(e) => setStatus(e.target.value)}
+                                                    label="Status"
+                                                >
+                                                    {STATUS_OPTIONS.map((option) => (
+                                                        <MenuItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        )}
+
                                         <Box sx={{ mt: 3 }}>
                                             <Typography variant="h6" gutterBottom>
                                                 Participants ({selectedUsers.length}/{maxParticipants})
@@ -489,8 +533,8 @@ export default function SingleEventManager() {
                                             <TextField
                                                 label="Search Users"
                                                 fullWidth
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                value={userSearchTerm}
+                                                onChange={(e) => setUserSearchTerm(e.target.value)}
                                                 margin="normal"
                                             />
                                             <Paper sx={{ maxHeight: 300, overflow: 'auto', mt: 2, p: 2 }}>
@@ -562,6 +606,11 @@ export default function SingleEventManager() {
                                                     <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                                                         Max Participants: {maxParticipants}
                                                     </Typography>
+                                                    {editMode && (
+                                                        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                                            Status: {status}
+                                                        </Typography>
+                                                    )}
                                                     <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                                                         Selected Participants: {selectedUsers.length}/{maxParticipants}
                                                     </Typography>
@@ -669,8 +718,9 @@ export default function SingleEventManager() {
                                                             <Chip
                                                                 label={selectedEvent.status}
                                                                 color={
-                                                                    selectedEvent.status === 'ACTIVE' ? 'success' :
-                                                                        selectedEvent.status === 'PENDING' ? 'warning' : 'default'
+                                                                    selectedEvent.status === 'SCHEDULED' ? 'success' :
+                                                                        selectedEvent.status === 'COMPLETED' ? 'primary' :
+                                                                            selectedEvent.status === 'PENDING' ? 'warning' : 'default'
                                                                 }
                                                             />
                                                         </Typography>
@@ -732,8 +782,8 @@ export default function SingleEventManager() {
                                                                         transition: 'all 0.3s',
                                                                         '&:hover': {
                                                                             transform: 'scale(1.1)',
-                                                                            backgroundColor: participant.accepted 
-                                                                                ? 'rgba(46, 125, 50, 0.1)' 
+                                                                            backgroundColor: participant.accepted
+                                                                                ? 'rgba(46, 125, 50, 0.1)'
                                                                                 : 'rgba(211, 47, 47, 0.1)'
                                                                         }
                                                                     }}

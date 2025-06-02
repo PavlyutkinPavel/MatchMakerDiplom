@@ -5,7 +5,8 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 
-@Entity(name = "l_users_teams")
+@Entity
+@Table(name = "l_users_teams")
 @Data
 @Component
 public class UserTeamRelation {

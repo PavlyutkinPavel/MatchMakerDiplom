@@ -1,440 +1,695 @@
 import React, { useState, useEffect } from 'react';
 import {
-   Typography, Button, Container, Grid, Card, CardContent,
-    CardMedia, Box, Chip, useMediaQuery,Tabs, Tab
+    Box, Paper, Typography, Button, TextField, MenuItem, FormControl, InputLabel, Select,
+    Grid, Chip, Card, CardContent, Container, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Tabs, Tab, CircularProgress, List, ListItem, ListItemText,
+    ListItemAvatar, Avatar, Badge, Divider, Tooltip
 } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import {
-
-    SportsSoccer,
-    SportsBasketball,
-    SportsVolleyball,
-    SportsRugby,
-    Event,
-    LocationOn,
-    People,
-    EmojiEvents,
-    ArrowForward,
+    Event, Groups, SportsSoccer, SportsBasketball, SportsTennis, SportsHockey, SportsVolleyball,
+    People, PersonAdd, CalendarMonth, LocationOn, Visibility, Search, EmojiEvents, Info
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import { styled } from '@mui/system';
-import AppTheme from "../shared-theme/AppTheme";
-import AppAppBar from "../blog/components/AppAppBar";
-import { useRef } from 'react';
-import { useAnimation, useInView } from 'framer-motion';
+import useApplicationStore from 'store/useApplicationStore';
+import { fromISOToLocal } from 'helpers/dateUtils';
+import AppTheme from 'components/shared-theme/AppTheme';
+import { Snackbar, Alert } from '@mui/material';
+import AppAppBar from 'components/blog/components/AppAppBar';
+import CssBaseline from "@mui/material/CssBaseline";
 
-import { useNavigate } from 'react-router-dom';
-
-const FeatureCard = styled(Card)(({ theme }) => ({
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-    '&:hover': {
-        transform: 'translateY(-10px)',
-        boxShadow: theme.shadows[10],
-    },
+const EventCard = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(3),
+    borderRadius: theme.shape.borderRadius * 2,
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    marginTop: theme.spacing(8), // Добавляем отступ сверху
 }));
 
-
-const CustomButton = styled(Button)(({ theme }) => ({
-    borderRadius: '30px',
-    padding: theme.spacing(1, 4),
-    fontWeight: 'bold',
-    textTransform: 'none',
-    transition: 'all 0.3s ease',
-    position: 'relative',
-    overflow: 'hidden',
-    '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        background: 'rgba(255, 255, 255, 0.2)',
-        transform: 'translateX(-100%)',
-        transition: 'transform 0.3s ease',
-    },
-    '&:hover::after': {
-        transform: 'translateX(0)',
-    },
-}));
-
-const featuredEvents = [
-    {
-        id: 1,
-        title: 'City Football Championship',
-        date: 'June 15, 2025',
-        time: '10:00 AM',
-        location: 'Central Stadium',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%2334495e" width="800" height="400"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EФутбольный турнир%3C/text%3E%3Ccircle cx="400" cy="200" r="80" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Cpolygon fill="%23ecf0f1" points="400,155 415,195 460,195 425,220 435,265 400,240 365,265 375,220 340,195 385,195"/%3E%3C/svg%3E',
-        category: 'Football',
-        icon: <SportsSoccer />,
-        bgColor: '#2196f3',
-        participants: 120,
-        description: 'Join the most anticipated football tournament of the year with teams from across the region competing for the city championship title.'
-    },
-    {
-        id: 2,
-        title: 'Basketball Tournament "3x3"',
-        date: 'June 22, 2025',
-        time: '2:00 PM',
-        location: 'Olympic Sports Complex',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%23e74c3c" width="800" height="400"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EБаскетбольный турнир%3C/text%3E%3Ccircle cx="400" cy="200" r="85" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Cline x1="400" y1="120" x2="400" y2="280" stroke="%23ecf0f1" stroke-width="6"/%3E%3C/svg%3E',
-        category: 'Basketball',
-        icon: <SportsBasketball />,
-        bgColor: '#e74c3c',
-        participants: 80,
-        description: 'Fast-paced 3x3 basketball competition with amazing prizes and special guest appearances from professional players.'
-    },
-    {
-        id: 3,
-        title: 'City Volleyball Tournament',
-        date: 'June 29, 2025',
-        time: '11:00 AM',
-        location: 'Sunny Beach',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%232ecc71" width="800" height="400"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EВолейбольный турнир%3C/text%3E%3Cline x1="150" y1="200" x2="650" y2="200" stroke="%23ecf0f1" stroke-width="8"/%3E%3Ccircle cx="400" cy="180" r="70" stroke="%23ecf0f1" stroke-width="6" fill="none"/%3E%3C/svg%3E',
-        category: 'Volleyball',
-        icon: <SportsVolleyball />,
-        bgColor: '#2ecc71',
-        participants: 64,
-        description: 'Experience beach volleyball at its finest with this exciting tournament featuring amateur and semi-professional teams.'
-    },
+const SPORT_TYPES = [
+    { value: 'FOOTBALL', label: 'Football', icon: <SportsSoccer /> },
+    { value: 'BASKETBALL', label: 'Basketball', icon: <SportsBasketball /> },
+    { value: 'TENNIS', label: 'Tennis', icon: <SportsTennis /> },
+    { value: 'HOCKEY', label: 'Hockey', icon: <SportsHockey /> },
+    { value: 'VOLLEYBALL', label: 'Volleyball', icon: <SportsVolleyball /> },
 ];
 
-const upcomingEvents = [
-    {
-        id: 1,
-        title: 'Youth Football Tournament',
-        date: 'June 12, 2025',
-        time: '9:00 AM',
-        location: 'School #8 Field',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%233498db" width="800" height="400"/%3E%3Ccircle cx="400" cy="200" r="80" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EДетский футбол%3C/text%3E%3C/svg%3E',
-        category: 'Football',
-        participants: 80,
-        rating: 4.8,
-        description: 'A special tournament designed for young football talents to showcase their skills and passion for the game.'
-    },
-    {
-        id: 2,
-        title: 'Veterans Rugby Match',
-        date: 'June 14, 2025',
-        time: '4:30 PM',
-        location: 'City Stadium',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%239b59b6" width="800" height="400"/%3E%3Cellipse cx="400" cy="200" rx="100" ry="60" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EРегби%3C/text%3E%3C/svg%3E',
-        category: 'Rugby',
-        participants: 30,
-        rating: 4.7,
-        description: 'Experience the passion and skill of veteran rugby players as they come together for this special exhibition match.'
-    },
-    {
-        id: 3,
-        title: 'Amateur Basketball Cup',
-        date: 'June 20, 2025',
-        time: '1:00 PM',
-        location: '"Sport for All" Center',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%23d35400" width="800" height="400"/%3E%3Ccircle cx="400" cy="200" r="80" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EЛюбительский баскетбол%3C/text%3E%3C/svg%3E',
-        category: 'Basketball',
-        participants: 96,
-        rating: 4.9,
-        description: 'The largest amateur basketball tournament in the region, bringing together players of all skill levels for a friendly competition.'
-    },
-    {
-        id: 4,
-        title: 'City Marathon',
-        date: 'June 25, 2025',
-        time: '7:00 AM',
-        location: 'City Center Streets',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%231abc9c" width="800" height="400"/%3E%3Cpath d="M150,300 C250,100 350,300 450,100 C550,300 650,100 750,300" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EМарафон%3C/text%3E%3C/svg%3E',
-        category: 'Running',
-        participants: 500,
-        rating: 4.9,
-        description: 'Challenge yourself in this annual city marathon that takes you through the most scenic parts of our beautiful city.'
-    },
-    {
-        id: 5,
-        title: 'Corporate Volleyball Tournament',
-        date: 'June 30, 2025',
-        time: '5:00 PM',
-        location: '"Dynamo" Sports Arena',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%2327ae60" width="800" height="400"/%3E%3Cline x1="150" y1="200" x2="650" y2="200" stroke="%23ecf0f1" stroke-width="8"/%3E%3Ccircle cx="300" cy="150" r="50" stroke="%23ecf0f1" stroke-width="6" fill="none"/%3E%3Ccircle cx="500" cy="150" r="50" stroke="%23ecf0f1" stroke-width="6" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EКорпоративный волейбол%3C/text%3E%3C/svg%3E',
-        category: 'Volleyball',
-        participants: 48,
-        rating: 4.6,
-        description: 'Companies from across the city compete in this team-building volleyball tournament designed to foster corporate spirit.'
-    },
-    {
-        id: 6,
-        title: 'Indoor Soccer Tournament',
-        date: 'July 2, 2025',
-        time: '3:30 PM',
-        location: '"Champion" Hall',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%23f1c40f" width="800" height="400"/%3E%3Crect x="150" y="100" width="500" height="200" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EМини-футбол%3C/text%3E%3C/svg%3E',
-        category: 'Football',
-        participants: 60,
-        rating: 4.7,
-        description: 'Fast-paced indoor soccer action featuring teams from all skill levels competing in this exciting tournament.'
-    },
-    {
-        id: 7,
-        title: 'City Marathon',
-        date: 'June 25, 2025',
-        time: '7:00 AM',
-        location: 'City Center Streets',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%231abc9c" width="800" height="400"/%3E%3Cpath d="M150,300 C250,100 350,300 450,100 C550,300 650,100 750,300" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EМарафон%3C/text%3E%3C/svg%3E',
-        category: 'Running',
-        participants: 500,
-        rating: 4.9,
-        description: 'Challenge yourself in this annual city marathon that takes you through the most scenic parts of our beautiful city.'
-    },
-    {
-        id: 8,
-        title: 'Corporate Volleyball Tournament',
-        date: 'June 30, 2025',
-        time: '5:00 PM',
-        location: '"Dynamo" Sports Arena',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%2327ae60" width="800" height="400"/%3E%3Cline x1="150" y1="200" x2="650" y2="200" stroke="%23ecf0f1" stroke-width="8"/%3E%3Ccircle cx="300" cy="150" r="50" stroke="%23ecf0f1" stroke-width="6" fill="none"/%3E%3Ccircle cx="500" cy="150" r="50" stroke="%23ecf0f1" stroke-width="6" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EКорпоративный волейбол%3C/text%3E%3C/svg%3E',
-        category: 'Volleyball',
-        participants: 48,
-        rating: 4.6,
-        description: 'Companies from across the city compete in this team-building volleyball tournament designed to foster corporate spirit.'
-    },
-    {
-        id: 9,
-        title: 'Indoor Soccer Tournament',
-        date: 'July 2, 2025',
-        time: '3:30 PM',
-        location: '"Champion" Hall',
-        image: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"%3E%3Crect fill="%23f1c40f" width="800" height="400"/%3E%3Crect x="150" y="100" width="500" height="200" stroke="%23ecf0f1" stroke-width="8" fill="none"/%3E%3Ctext fill="%23ecf0f1" font-family="Arial" font-size="28" x="50%%" y="50%%" text-anchor="middle"%3EМини-футбол%3C/text%3E%3C/svg%3E',
-        category: 'Football',
-        participants: 60,
-        rating: 4.7,
-        description: 'Fast-paced indoor soccer action featuring teams from all skill levels competing in this exciting tournament.'
-    },
-];
+const STATUS_OPTIONS = {
+    TABLE: [
+        { value: 'ALL', label: 'All Statuses' },
+        { value: 'OPEN', label: 'Open' },
+        { value: 'IN_PROGRESS', label: 'In Progress' },
+        { value: 'COMPLETED', label: 'Completed' }
+    ],
+    TWO_TEAMS: [
+        { value: 'ALL', label: 'All Statuses' },
+        { value: 'PENDING', label: 'Pending' },
+        { value: 'SCHEDULED', label: 'Scheduled' },
+        { value: 'COMPLETED', label: 'Completed' },
+        { value: 'CANCELLED', label: 'Cancelled' }
+    ],
+    SINGLE: [
+        { value: 'ALL', label: 'All Statuses' },
+        { value: 'PENDING', label: 'Pending' },
+        { value: 'SCHEDULED', label: 'Scheduled' },
+        { value: 'COMPLETED', label: 'Completed' },
+        { value: 'CANCELLED', label: 'Cancelled' }
+    ]
+};
 
-export default function (){
-    const [darkMode, setDarkMode] = useState(false);
-    const [currentEvent, setCurrentEvent] = useState(0);
+export default function UpComingEvents() {
+    const store = useApplicationStore();
     const [tabValue, setTabValue] = useState(0);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const isMobile = useMediaQuery('(max-width:600px)');
-    const isTablet = useMediaQuery('(max-width:960px)');
-    const navigate = useNavigate();
+    const [events, setEvents] = useState([]);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [dateSort, setDateSort] = useState('newest');
+    const [participants, setParticipants] = useState([]);
+    const [teams, setTeams] = useState([]);
 
-
-    const [filteredCategory, setFilteredCategory] = useState("All");
-
-    const filteredEvents = filteredCategory === "All"
-        ? upcomingEvents
-        : upcomingEvents.filter(event => event.category === filteredCategory);
-
-
-    const theme = createTheme({
-        palette: {
-            mode: darkMode ? 'dark' : 'light',
-            primary: {
-                main: darkMode ? '#90caf9' : '#1976d2',
-            },
-            secondary: {
-                main: darkMode ? '#f48fb1' : '#dc004e',
-            },
-            background: {
-                default: darkMode ? '#121212' : '#f5f5f5',
-                paper: darkMode ? '#1e1e1e' : '#ffffff',
-            },
-        },
-        typography: {
-            fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-            h1: {
-                fontWeight: 700,
-            },
-            h2: {
-                fontWeight: 600,
-            },
-            button: {
-                fontWeight: 500,
-            },
-        },
-        components: {
-            MuiButton: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '8px',
-                        textTransform: 'none',
-                        fontWeight: 'bold',
-                    },
-                },
-            },
-            MuiCard: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                    },
-                },
-            },
-            MuiPaper: {
-                styleOverrides: {
-                    root: {
-                        borderRadius: '16px',
-                    },
-                },
-            },
-        },
-    });
+    const currentUser = store.user.myAuth;
+    const eventTypes = ['TABLE', 'TWO_TEAMS', 'SINGLE'];
+    const currentEventType = eventTypes[tabValue];
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentEvent((prev) => (prev + 1) % featuredEvents.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                let eventsData;
+                switch (currentEventType) {
+                    case 'TABLE':
+                        eventsData = await store.tableEvent.fetchAll();
+                        break;
+                    case 'TWO_TEAMS':
+                        eventsData = await store.twoTeamEvent.fetchAll();
+                        break;
+                    case 'SINGLE':
+                        eventsData = await store.singleEvent.fetchAll();
+                        break;
+                    default:
+                        eventsData = [];
+                }
 
-    const handleTabChange = (event, newValue) => {
-        setTabValue(newValue);
-        const categories = ["All", "Football", "Basketball", "Volleyball", "Rugby"];
-        setFilteredCategory(categories[newValue]);
-    };
-
-    const controls = useAnimation();
-    const reelRef = useRef(null);
-    const isInView = useInView(reelRef, { once: true });
+                const teamsData = await store.team.fetchAll();
+                setEvents(eventsData);
+                setTeams(teamsData);
+            } catch (error) {
+                showSnackbar(error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [tabValue, currentEventType]);
 
     useEffect(() => {
-        if (isInView) {
-            controls.start("animate");
+        if (selectedEvent) {
+            const loadEventDetails = async () => {
+                try {
+                    if (currentEventType === 'SINGLE') {
+                        const participantsData = await store.singleEvent.fetchParticipants(selectedEvent.id);
+                        setParticipants(participantsData);
+                    } else if (currentEventType === 'TABLE') {
+                        const teamsData = await store.tableEvent.fetchTeams(selectedEvent.id);
+                        setParticipants(teamsData);
+                    }
+                } catch (error) {
+                    showSnackbar(error.message, 'error');
+                }
+            };
+            loadEventDetails();
         }
-    }, [isInView, controls]);
+    }, [selectedEvent, currentEventType]);
 
-    const [showAll, setShowAll] = useState(false);
+    const handleParticipate = async () => {
+        if (!selectedEvent || currentEventType !== 'SINGLE' || !currentUser?.id) return;
 
+        setLoading(true);
+        try {
+            await store.singleEvent.addParticipants(selectedEvent.id, [currentUser.id]);
+            showSnackbar('You have successfully joined the event!', 'success');
 
-    const animationVariants = {
-        animate: {
-            x: ['0%', '-100%'],
-            transition: {
-                x: {
-                    repeat: Infinity,
-                    repeatType: 'loop',
-                    duration: 30,
-                    ease: 'linear',
-                },
-            },
-        },
+            const updatedParticipants = await store.singleEvent.fetchParticipants(selectedEvent.id);
+            setParticipants(updatedParticipants);
+
+            const updatedEvents = await store.singleEvent.fetchAll();
+            setEvents(updatedEvents);
+        } catch (error) {
+            showSnackbar(error.message || 'Failed to join the event', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
-    return(
-        <AppTheme>
-            <CssBaseline enableColorScheme/>
-            <AppAppBar/>
-            <Container sx={{my: 8}}>
-                <motion.div
-                    initial={{opacity: 0, y: 50}}
-                    whileInView={{opacity: 1, y: 0}}
-                    transition={{duration: 0.8}}
-                    viewport={{once: true}}
-                >
-                    <Typography variant="h4" component="h2" align="center" gutterBottom fontWeight="bold">
-                        All categories
+
+    const showSnackbar = (message, severity = 'success') => {
+        setSnackbar({ open: true, message, severity });
+    };
+
+    const handleCloseSnackbar = () => {
+        setSnackbar({ ...snackbar, open: false });
+    };
+
+    const renderSportIcon = (type) => {
+        const sport = SPORT_TYPES.find(t => t.value === type);
+        return sport ? sport.icon : <SportsSoccer />;
+    };
+
+    const getTeamName = (teamId) => {
+        const team = teams.find(t => t.id === teamId);
+        return team ? team.teamName : 'Unknown Team';
+    };
+
+    const getEventIcon = () => {
+        switch (currentEventType) {
+            case 'TABLE': return <EmojiEvents />;
+            case 'TWO_TEAMS': return <Groups />;
+            case 'SINGLE': return <People />;
+            default: return <Event />;
+        }
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'COMPLETED':
+                return 'success';
+            case 'PENDING':
+                return 'warning';
+            case 'SCHEDULED':
+                return 'info';
+            case 'OPEN':
+                return 'primary';
+            case 'IN_PROGRESS':
+                return 'secondary';
+            default:
+                return 'default';
+        }
+    };
+
+    const getParticipationStatus = () => {
+        if (!currentUser?.id || currentEventType !== 'SINGLE') return null;
+
+        const participant = participants.find(p => p.user?.id === currentUser.id);
+
+        if (!participant) {
+            if (selectedEvent.status !== 'PENDING') {
+                return {
+                    text: 'Event is not accepting participants',
+                    tooltip: 'This event is not in PENDING status'
+                };
+            }
+            return null;
+        }
+
+        if (participant.accepted) {
+            return {
+                text: 'You are participating',
+                tooltip: 'Your participation has been accepted'
+            };
+        }
+
+        return {
+            text: 'Your request is pending',
+            tooltip: 'Waiting for organizer approval'
+        };
+    };
+
+    const filteredEvents = events
+        .filter(event => {
+            const matchesStatus = statusFilter === 'ALL' || event.status === statusFilter;
+            const matchesSearch = event.event?.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.event?.eventLocation?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.eventName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.eventLocation?.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesStatus && matchesSearch;
+        })
+        .sort((a, b) => {
+            const dateA = new Date(a.event?.eventDate || a.eventDate);
+            const dateB = new Date(b.event?.eventDate || b.eventDate);
+            return dateSort === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+
+    const renderEventDetails = () => {
+        if (!selectedEvent) return null;
+
+        const eventData = selectedEvent.event ? selectedEvent.event : selectedEvent;
+        const isSingleEvent = currentEventType === 'SINGLE';
+        const isTableEvent = currentEventType === 'TABLE';
+        const isTwoTeamEvent = currentEventType === 'TWO_TEAMS';
+
+        const canParticipate = isSingleEvent &&
+            selectedEvent.status === 'PENDING' &&
+            currentUser?.id &&
+            !participants.some(p => p.user?.id === currentUser.id);
+
+        const participationStatus = getParticipationStatus();
+
+        return (
+            <EventCard>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h4">
+                        {eventData.eventName}
                     </Typography>
-                    <Box sx={{borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2}}>
-                        <Tabs
-                            value={tabValue}
-                            onChange={handleTabChange}
-                            variant={isMobile ? "scrollable" : "standard"}
-                            scrollButtons={isMobile ? "auto" : false}
-                            centered={!isMobile}
-                        >
-                            <Tab label="All events" icon={<EmojiEvents/>} iconPosition="start"/>
-                            <Tab label="Football" icon={<SportsSoccer/>} iconPosition="start"/>
-                            <Tab label="Basketball" icon={<SportsBasketball/>} iconPosition="start"/>
-                            <Tab label="Volleyball" icon={<SportsVolleyball/>} iconPosition="start"/>
-                            <Tab label="Rugby" icon={<SportsRugby/>} iconPosition="start"/>
-                        </Tabs>
-                    </Box>
-                </motion.div>
-            </Container>
-
-            <Container sx={{my: 4}}>
-                <Grid container spacing={3}>
-                    {(showAll ? filteredEvents : filteredEvents.slice(0, 6)).map((event, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={event.id}>
-                            <motion.div
-                                initial={{opacity: 0, y: 50}}
-                                whileInView={{opacity: 1, y: 0}}
-                                transition={{duration: 0.5, delay: index * 0.1}}
-                                viewport={{once: true}}
-                            >
-                                <FeatureCard>
-                                    <CardMedia
-                                        component="img"
-                                        height="140"
-                                        image={event.image}
-                                        alt={event.title}
-                                    />
-                                    <CardContent>
-                                        <Chip
-                                            label={event.category}
-                                            size="small"
-                                            color="primary"
-                                            sx={{mb: 1}}
-                                        />
-                                        <Typography gutterBottom variant="h6" component="div"
-                                                    sx={{fontWeight: 'bold'}}>
-                                            {event.title}
-                                        </Typography>
-                                        <Box sx={{display: 'flex', alignItems: 'center', mb: 1}}>
-                                            <Event fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {event.date}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{display: 'flex', alignItems: 'center'}}>
-                                            <LocationOn fontSize="small" sx={{mr: 1, color: 'text.secondary'}}/>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {event.location}
-                                            </Typography>
-                                        </Box>
-                                    </CardContent>
-                                    <Box sx={{mt: 'auto', p: 2, display: 'flex', justifyContent: 'space-between'}}>
-                                        <Button
-                                            size="small"
-                                            color="primary"
-                                            sx={{fontWeight: 'bold'}}
-                                            onClick={() => navigate(`/tournament/${event.id}`)}
-                                        >
-                                            About
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            color="primary"
-                                            sx={{fontWeight: 'bold'}}
-                                            onClick={() => navigate('/tournament')}
-                                        >
-                                            Participate
-                                        </Button>
-                                    </Box>
-                                </FeatureCard>
-                            </motion.div>
-                        </Grid>
-                    ))}
-                </Grid>
-
-                <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}>
-                    <CustomButton
+                    <Button
                         variant="outlined"
-                        color="primary"
-                        size="large"
-                        endIcon={<ArrowForward />}
-                        onClick={() => setShowAll(true)}
+                        onClick={() => setSelectedEvent(null)}
+                        startIcon={<Visibility />}
                     >
-                        Show all events
-                    </CustomButton>
+                        Back to list
+                    </Button>
                 </Box>
+
+                <Grid container spacing={3}>
+                    <Grid item xs={12} md={8}>
+                        <Card sx={{ mb: 3 }}>
+                            <CardContent>
+                                <Typography variant="h6" gutterBottom>
+                                    Event Details
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Date
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            {fromISOToLocal(eventData.eventDate)}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Location
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            {eventData.eventLocation}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Sport Type
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                {renderSportIcon(eventData.sportType)}
+                                                {SPORT_TYPES.find(t => t.value === eventData.sportType)?.label}
+                                            </Box>
+                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Typography variant="body2" color="textSecondary">
+                                            Status
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            <Chip
+                                                label={selectedEvent.status}
+                                                color={getStatusColor(selectedEvent.status)}
+                                            />
+                                        </Typography>
+                                    </Grid>
+                                    {isTableEvent && (
+                                        <>
+                                            <Grid item xs={6}>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Teams Limit
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {selectedEvent.maxTeams}
+                                                </Typography>
+                                            </Grid>
+                                        </>
+                                    )}
+                                    {isSingleEvent && (
+                                        <>
+                                            <Grid item xs={6}>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Participants Limit
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {selectedEvent.maxParticipants}
+                                                </Typography>
+                                            </Grid>
+                                        </>
+                                    )}
+                                    {isTwoTeamEvent && (
+                                        <>
+                                            <Grid item xs={6}>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Team 1
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {getTeamName(selectedEvent.team1Id)}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Team 2
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {getTeamName(selectedEvent.team2Id)}
+                                                </Typography>
+                                            </Grid>
+                                        </>
+                                    )}
+                                </Grid>
+                            </CardContent>
+                        </Card>
+
+                        {isSingleEvent && (
+                            <>
+                                <Typography variant="h6" gutterBottom>
+                                    Participants
+                                </Typography>
+
+                                {participants.length > 0 ? (
+                                    <List>
+                                        {participants.map((participant) => (
+                                            <ListItem key={participant.user?.id || participant.id}>
+                                                <ListItemAvatar>
+                                                    <Badge
+                                                        badgeContent=" "
+                                                        color={participant.accepted ? 'success' : 'warning'}
+                                                        variant="dot"
+                                                        anchorOrigin={{
+                                                            vertical: 'bottom',
+                                                            horizontal: 'right',
+                                                        }}
+                                                    >
+                                                        <Avatar>
+                                                            {participant.user?.firstName?.charAt(0)}{participant.user?.lastName?.charAt(0)}
+                                                        </Avatar>
+                                                    </Badge>
+                                                </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={`${participant.user?.firstName} ${participant.user?.lastName}`}
+                                                    secondary={participant.user?.userLogin}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                ) : (
+                                    <Paper sx={{ p: 3, textAlign: 'center' }}>
+                                        <Typography color="textSecondary">
+                                            No participants yet
+                                        </Typography>
+                                    </Paper>
+                                )}
+                            </>
+                        )}
+
+                        {isTableEvent && (
+                            <>
+                                <Typography variant="h6" gutterBottom>
+                                    Teams
+                                </Typography>
+
+                                {participants.length > 0 ? (
+                                    <TableContainer component={Paper}>
+                                        <Table>
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Team</TableCell>
+                                                    <TableCell align="right">Points</TableCell>
+                                                    <TableCell align="right">Wins</TableCell>
+                                                    <TableCell align="right">Losses</TableCell>
+                                                    <TableCell align="right">Draws</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {participants.map((team) => (
+                                                    <TableRow key={team.teamId}>
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                <Avatar sx={{ width: 24, height: 24 }}>
+                                                                    {getTeamName(team.teamId).charAt(0)}
+                                                                </Avatar>
+                                                                {getTeamName(team.teamId)}
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell align="right">{team.points || 0}</TableCell>
+                                                        <TableCell align="right">{team.wins || 0}</TableCell>
+                                                        <TableCell align="right">{team.losses || 0}</TableCell>
+                                                        <TableCell align="right">{team.draws || 0}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                ) : (
+                                    <Paper sx={{ p: 3, textAlign: 'center' }}>
+                                        <Typography color="textSecondary">
+                                            No teams in this event
+                                        </Typography>
+                                    </Paper>
+                                )}
+                            </>
+                        )}
+
+                        {isTwoTeamEvent && (
+                            <>
+                                <Typography variant="h6" gutterBottom>
+                                    Match Results
+                                </Typography>
+
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={6}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="subtitle1" gutterBottom>
+                                                    {getTeamName(selectedEvent.team1Id)}
+                                                </Typography>
+                                                <Typography variant="h4" color="primary">
+                                                    {selectedEvent.team1Score !== null ? selectedEvent.team1Score : '-'}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                    <Grid item xs={12} md={6}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="subtitle1" gutterBottom>
+                                                    {getTeamName(selectedEvent.team2Id)}
+                                                </Typography>
+                                                <Typography variant="h4" color="primary">
+                                                    {selectedEvent.team2Score !== null ? selectedEvent.team2Score : '-'}
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                </Grid>
+                            </>
+                        )}
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        <Card>
+                            <CardContent>
+                                {isSingleEvent && (
+                                    <>
+                                        <Typography variant="h6" gutterBottom>
+                                            Participation
+                                        </Typography>
+                                        {canParticipate ? (
+                                            <>
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    fullWidth
+                                                    startIcon={<PersonAdd />}
+                                                    onClick={handleParticipate}
+                                                    disabled={loading}
+                                                    sx={{ mb: 2 }}
+                                                >
+                                                    Participate
+                                                </Button>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Join this event as a participant
+                                                </Typography>
+                                            </>
+                                        ) : participationStatus ? (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                                <Tooltip title={participationStatus.tooltip}>
+                                                    <Info color="info" />
+                                                </Tooltip>
+                                                <Typography variant="body1">
+                                                    {participationStatus.text}
+                                                </Typography>
+                                            </Box>
+                                        ) : null}
+                                        <Divider sx={{ my: 2 }} />
+                                    </>
+                                )}
+                                <Typography variant="body2" color="textSecondary">
+                                    Created at: {fromISOToLocal(selectedEvent.createdAt || eventData.createdAt)}
+                                </Typography>
+                                {selectedEvent.updatedAt && (
+                                    <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                                        Updated at: {fromISOToLocal(selectedEvent.updatedAt)}
+                                    </Typography>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
+            </EventCard>
+        );
+    };
+
+    const renderEventList = () => (
+        <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {getEventIcon()} {currentEventType.replace('_', ' ')} Events
+                </Typography>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <TextField
+                        label="Search"
+                        size="small"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        InputProps={{
+                            startAdornment: <Search fontSize="small" sx={{ mr: 1 }} />
+                        }}
+                    />
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            label="Status"
+                        >
+                            {STATUS_OPTIONS[currentEventType].map(option => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <InputLabel>Date</InputLabel>
+                        <Select
+                            value={dateSort}
+                            onChange={(e) => setDateSort(e.target.value)}
+                            label="Date"
+                        >
+                            <MenuItem value="newest">Newest First</MenuItem>
+                            <MenuItem value="oldest">Oldest First</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+            </Box>
+
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                    <CircularProgress size={60} />
+                </Box>
+            ) : filteredEvents.length === 0 ? (
+                <Paper sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography color="textSecondary">
+                        No events found matching your criteria
+                    </Typography>
+                </Paper>
+            ) : (
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Event Name</TableCell>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Location</TableCell>
+                                <TableCell>Sport</TableCell>
+                                <TableCell>Status</TableCell>
+                                {currentEventType === 'TABLE' && <TableCell>Teams Limit</TableCell>}
+                                {currentEventType === 'SINGLE' && <TableCell>Participants Limit</TableCell>}
+                                <TableCell>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {filteredEvents.map((event) => {
+                                const eventData = event.event ? event.event : event;
+                                return (
+                                    <TableRow key={event.id} hover>
+                                        <TableCell>{eventData.eventName}</TableCell>
+                                        <TableCell>{fromISOToLocal(eventData.eventDate)}</TableCell>
+                                        <TableCell>{eventData.eventLocation}</TableCell>
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                {renderSportIcon(eventData.sportType)}
+                                                {SPORT_TYPES.find(t => t.value === eventData.sportType)?.label}
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={event.status}
+                                                color={getStatusColor(event.status)}
+                                            />
+                                        </TableCell>
+                                        {currentEventType === 'TABLE' && (
+                                            <TableCell>
+                                                {event.maxTeams}
+                                            </TableCell>
+                                        )}
+                                        {currentEventType === 'SINGLE' && (
+                                            <TableCell>
+                                                {event.maxParticipants}
+                                            </TableCell>
+                                        )}
+                                        <TableCell>
+                                            <Button
+                                                size="small"
+                                                startIcon={<Visibility />}
+                                                onClick={() => setSelectedEvent(event)}
+                                            >
+                                                View
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+        </Box>
+    );
+
+    return (
+        <AppTheme>
+            <CssBaseline enableColorScheme />
+            <AppAppBar />
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Paper elevation={0} sx={{ mb: 3, mt: 6 }}>
+                    <Tabs
+                        value={tabValue}
+                        onChange={(e, newValue) => {
+                            setTabValue(newValue);
+                            setSelectedEvent(null);
+                            setStatusFilter('ALL');
+                        }}
+                        variant="fullWidth"
+                    >
+                        <Tab label="Table Events" icon={<EmojiEvents />} />
+                        <Tab label="Two Teams Events" icon={<Groups />} />
+                        <Tab label="Single Events" icon={<People />} />
+                    </Tabs>
+                </Paper>
+
+                {selectedEvent ? renderEventDetails() : renderEventList()}
+
+                <Snackbar
+                    open={snackbar.open}
+                    autoHideDuration={6000}
+                    onClose={handleCloseSnackbar}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert
+                        onClose={handleCloseSnackbar}
+                        severity={snackbar.severity}
+                        sx={{ width: '100%' }}
+                    >
+                        {snackbar.message}
+                    </Alert>
+                </Snackbar>
             </Container>
         </AppTheme>
-    )
+    );
 }

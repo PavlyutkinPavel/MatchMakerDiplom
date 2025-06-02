@@ -69,6 +69,34 @@ const event = (set, get) => ({
       }
     },
 
+    fetchAllByCreator: async (id) => {
+      const { showLoader, hideLoader } = get().loader;
+      showLoader({ moduleName: 'event', text: `Loading events by ${id}...` });
+
+      try {
+        const response = await api.get(`/event/creator/${id}`);
+        set({
+          event: {
+            ...get().event,
+            list: response.data,
+            error: null
+          }
+        });
+        return response.data;
+      } catch (err) {
+        set({
+          event: {
+            ...get().event,
+            error: err.response?.data?.message || err.message
+          }
+        });
+        throw err;
+      } finally {
+        hideLoader('event');
+      }
+    },
+
+
     // Создать событие
     create: async (eventData) => {
       const { showLoader, hideLoader } = get().loader;

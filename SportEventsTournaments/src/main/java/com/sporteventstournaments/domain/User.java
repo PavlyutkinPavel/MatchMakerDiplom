@@ -1,19 +1,14 @@
 package com.sporteventstournaments.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @Schema(description = "Описание пользователя")
@@ -48,4 +43,13 @@ public class User {
     @Column(name = "in_game_role")
     @Enumerated(EnumType.STRING)
     private InGameRole inGameRole;
+
+    @OneToMany(mappedBy = "senderUser", cascade = CascadeType.ALL)
+    @JsonManagedReference("email-sender")
+    private List<Email> sentEmails;
+
+    @OneToMany(mappedBy = "recipientUser", cascade = CascadeType.ALL)
+    @JsonManagedReference("email-recipient")
+    private List<Email> receivedEmails;
+
 }

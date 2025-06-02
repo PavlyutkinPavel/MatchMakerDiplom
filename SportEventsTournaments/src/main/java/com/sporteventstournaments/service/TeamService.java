@@ -6,6 +6,7 @@ import com.sporteventstournaments.domain.TeamType;
 import com.sporteventstournaments.domain.User;
 import com.sporteventstournaments.domain.UserTeamRelation;
 import com.sporteventstournaments.domain.dto.TeamDTO;
+import com.sporteventstournaments.domain.dto.TeamResponseDTO;
 import com.sporteventstournaments.exception.TeamNotFoundException;
 import com.sporteventstournaments.exception.UserNotFoundException;
 import com.sporteventstournaments.repository.TeamRepository;
@@ -14,16 +15,20 @@ import com.sporteventstournaments.repository.UserTeamRelationRepository;
 import com.sporteventstournaments.security.service.SecurityService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class TeamService {
+    private static final Logger log = LoggerFactory.getLogger(TeamService.class);
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
     private final UserTeamRelationRepository userTeamRelationRepository;
@@ -33,30 +38,56 @@ public class TeamService {
     private User user;
 
     public List<Team> getTeams(Principal principal) {
-        if(securityService.checkIfAdmin(principal.getName())){
+        return teamRepository.findAll();
+        /*if(securityService.checkIfAdmin(principal.getName())){
             return teamRepository.findAll();
         } else{
             User user = userRepository.findByUserLogin(principal.getName()).orElseThrow(UserNotFoundException::new);
             List<Long> teamIds = userTeamRelationRepository.findAllTeamsByUserId(user.getId());
             return teamRepository.findAllById(teamIds);
-        }
-
+        }*/
     }
+
+    public List<TeamResponseDTO> getMyTeams(Principal principal) {
+        User user = userRepository.findByUserLogin(principal.getName())
+                .orElseThrow(UserNotFoundException::new);
+        List<Team> teams = userTeamRelationRepository.findAllTeamsByUserId(user.getId());
+
+        List<TeamResponseDTO> dtoList = new ArrayList<>();
+        for (Team team : teams) {
+            TeamResponseDTO dto = new TeamResponseDTO(
+                    team.getId(),
+                    team.getTeamName(),
+                    team.getCountry(),
+                    team.getCity(),
+                    team.getAchievements(),
+                    team.getStatus(),
+                    team.getWins(),
+                    team.getTeamType(),
+                    team.getCreatorId(),
+                    team.getDirectorId()
+            );
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
     public Team getTeam(Long id) {
         return teamRepository.findById(id).orElseThrow(TeamNotFoundException::new);
     }
     public ResponseEntity<HttpStatus> createTeam(TeamDTO teamDTO, Principal principal) {
-        /*creator = userRepository.findByUserLogin(principal.getName()).orElseThrow(UserNotFoundException::new);
-        UserTeamRelation userTeamRelation = userTeamRelationRepository.findAllBy*/
+        User creator = userRepository.findByUserLogin(principal.getName()).orElseThrow(UserNotFoundException::new);
+//        UserTeamRelation userTeamRelation = userTeamRelationRepository.findAllBy*/
         int size = teamRepository.findAll().size();
         team.setId((long) (size+1));
         team.setTeamName(teamDTO.getTeamName());
         team.setTeamType(TeamType.valueOf(teamDTO.getTeamType().toUpperCase()));
         team.setCountry(teamDTO.getCountry());
-        team.setCountry(teamDTO.getCity());
+        team.setCity(teamDTO.getCity());
         team.setStatus(teamDTO.getStatus());
         team.setAchievements(teamDTO.getAchievements());
         team.setWins(teamDTO.getWins());
+        team.setCreatorId(creator.getId());
         teamRepository.save(team);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -95,6 +126,7 @@ public class TeamService {
         userTeamRelation.setPosition(userTeamRelationDTO.getPosition());
         userTeamRelation.setStats(userTeamRelationDTO.getStats());
         userTeamRelation.setTeamRole(UserTeamRelation.TeamRole.valueOf(userTeamRelationDTO.getTeamRole()));
+        log.info(String.valueOf(userTeamRelation));
         userTeamRelationRepository.save(userTeamRelation);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -106,7 +138,8 @@ public class TeamService {
         if (team.getCreatorId() != currentUser.getId()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }else{
-            userTeamRelationRepository.deleteUserTeamRelationByUserIdAndTeamId(teamId, userId);
+            log.info("deleteUserTeamRelationByUserIdAndTeamId");
+            userTeamRelationRepository.deleteUserTeamRelationByUserIdAndTeamId(userId, teamId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }

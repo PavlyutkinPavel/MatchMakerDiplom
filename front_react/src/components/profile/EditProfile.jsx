@@ -123,7 +123,8 @@ class UserProfileDTO {
         this.bio = userData.bio;
         this.location = userData.location;
         this.email = userData.email;
-        this.sports = userData.sports.map(sport => ({
+        // Fix: Handle undefined sports array
+        this.sports = (userData.sports || []).map(sport => ({
             name: sport.name,
             level: sport.level,
             experience: sport.experience
@@ -138,31 +139,56 @@ export default function EditProfile() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
+    // Fix: Initialize with default empty arrays
     const [userData, setUserData] = useState({
         name: '',
         username: '',
         bio: '',
         location: '',
         email: '',
-        sports: []
+        sports: [], // Ensure this is always an array
+        hobbies: [],
+        contacts: [],
     });
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             setLoading(true);
             try {
-                const response = await axios.get('/user/profile', {
-                    withCredentials: true
+                const response = await axios.get('http://localhost:8080/user/profile', {
+                    withCredentials: true,
+                    headers:{
+                        Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
+                    }
                 });
-                setUserData(response.data);
+
+                // Fix: Ensure sports is always an array
+                const profileData = {
+                    ...response.data,
+                    sports: response.data.sports || [],
+                    hobbies: response.data.hobbies || [],
+                    contacts: response.data.contacts || []
+                };
+
+                setUserData(profileData);
 
                 try {
-                    const avatarResponse = await axios.get('/user/avatar', {
+                    const avatarResponse = await axios.get('http://localhost:8080/user/avatar', {
                         withCredentials: true,
-                        responseType: 'blob'
+                        responseType: 'blob',
+                        headers:{
+                            Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
+                        }
                     });
                     const avatarUrl = URL.createObjectURL(avatarResponse.data);
                     setAvatarPreview(avatarUrl);
+
+                    // Fix: Clean up the avatar URL when component unmounts
+                    return () => {
+                        if (avatarUrl) {
+                            URL.revokeObjectURL(avatarUrl);
+                        }
+                    };
                 } catch (avatarError) {
                     console.error('Error loading avatar:', avatarError);
                 }
@@ -174,7 +200,14 @@ export default function EditProfile() {
             }
         };
 
-        fetchUserProfile();
+        const cleanup = fetchUserProfile();
+
+        // Return cleanup function
+        return () => {
+            if (cleanup && typeof cleanup === 'function') {
+                cleanup();
+            }
+        };
     }, []);
 
     // Обновление данных профиля
@@ -229,22 +262,26 @@ export default function EditProfile() {
         setError(null);
 
         try {
+            // Обновляем профиль - исправленный URL
             const profileDto = new UserProfileDTO(userData);
-            await axios.put('/api/profile', profileDto, {
+            await axios.put('http://localhost:8080/user/profile', profileDto, {
                 withCredentials: true,
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
                 }
             });
 
+            // Загружаем аватар - исправленный URL
             if (avatarFile) {
                 const formData = new FormData();
                 formData.append('file', avatarFile);
 
-                await axios.post('/api/avatar', formData, {
+                await axios.post('http://localhost:8080/user/avatar', formData, {
                     withCredentials: true,
                     headers: {
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'multipart/form-data',
+                        Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
                     }
                 });
             }
@@ -268,6 +305,20 @@ export default function EditProfile() {
     const handleCancel = () => {
         navigate('/profile');
     };
+
+    // Don't render the form until userData is loaded
+    if (loading && !userData.name) {
+        return (
+            <AppTheme>
+                <AppAppBar />
+                <ProfileContainer>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                        <CircularProgress size={60} />
+                    </Box>
+                </ProfileContainer>
+            </AppTheme>
+        );
+    }
 
     return (
         <AppTheme>
@@ -321,7 +372,7 @@ export default function EditProfile() {
                                     alt={userData.name}
                                     src={avatarPreview || "/path-to-avatar.jpg"}
                                 >
-                                    {!avatarPreview && userData.name.charAt(0)}
+                                    {!avatarPreview && userData.name && userData.name.charAt(0)}
                                 </LargeAvatar>
                                 <Box sx={{ mt: 1 }}>
                                     <input
@@ -354,7 +405,7 @@ export default function EditProfile() {
                                     <TextField
                                         label="Full Name"
                                         name="name"
-                                        value={userData.name}
+                                        value={userData.name || ''}
                                         onChange={handleInputChange}
                                         fullWidth
                                         required
@@ -364,7 +415,7 @@ export default function EditProfile() {
                                     <TextField
                                         label="Username"
                                         name="username"
-                                        value={userData.username}
+                                        value={userData.username || ''}
                                         onChange={handleInputChange}
                                         fullWidth
                                         required
@@ -373,24 +424,15 @@ export default function EditProfile() {
                                         }}
                                     />
                                 </Grid>
-                                <Grid item xs={12} md={6}>
+                                <Grid item xs={12}>
                                     <TextField
                                         label="Bio"
                                         name="bio"
-                                        value={userData.bio}
+                                        value={userData.bio || ''}
                                         onChange={handleInputChange}
                                         fullWidth
                                         inputProps={{ maxLength: 500 }}
-                                        helperText={`${userData.bio?.length || 0}/500 characters`}
-                                        sx={{
-                                            '& .MuiOutlinedInput-root': {
-                                                '& textarea': {
-                                                    overflow: 'auto',
-                                                    whiteSpace: 'pre-wrap',
-                                                    wordBreak: 'break-word'
-                                                }
-                                            }
-                                        }}
+                                        helperText={`${(userData.bio || '').length}/500 characters`}
                                     />
                                 </Grid>
                                 <Grid item xs={12} md={6}>
@@ -398,7 +440,7 @@ export default function EditProfile() {
                                         label="Email"
                                         name="email"
                                         type="email"
-                                        value={userData.email}
+                                        value={userData.email || ''}
                                         onChange={handleInputChange}
                                         fullWidth
                                         required
@@ -408,7 +450,7 @@ export default function EditProfile() {
                                     <TextField
                                         label="Location"
                                         name="location"
-                                        value={userData.location}
+                                        value={userData.location || ''}
                                         onChange={handleInputChange}
                                         fullWidth
                                     />
@@ -423,17 +465,17 @@ export default function EditProfile() {
                             {userData.sports.map((sport, index) => (
                                 <SportCard key={index}>
                                     <Grid container spacing={2} alignItems="center">
-                                        <Grid item xs={12} md={3}>
+                                        <Grid item xs={12} md={4}>
                                             <TextField
                                                 label="Sport Name"
-                                                value={sport.name}
+                                                value={sport.name || ''}
                                                 onChange={(e) => handleSportChange(index, 'name', e.target.value)}
                                                 fullWidth
                                                 required
                                                 InputProps={{
                                                     startAdornment: (
                                                         <InputAdornment position="start">
-                                                            {getSportIcon(sport.name)}
+                                                            {getSportIcon(sport.name || '')}
                                                         </InputAdornment>
                                                     ),
                                                 }}
@@ -443,7 +485,7 @@ export default function EditProfile() {
                                             <FormControl fullWidth>
                                                 <InputLabel>Level</InputLabel>
                                                 <Select
-                                                    value={sport.level}
+                                                    value={sport.level || 'Beginner'}
                                                     onChange={(e) => handleSportChange(index, 'level', e.target.value)}
                                                     input={<OutlinedInput label="Level" />}
                                                 >
@@ -455,11 +497,11 @@ export default function EditProfile() {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
-                                        <Grid item xs={10} md={3}>
+                                        <Grid item xs={10} md={4}>
                                             <TextField
                                                 label="Years of Experience"
                                                 type="number"
-                                                value={sport.experience}
+                                                value={sport.experience || 1}
                                                 onChange={(e) => handleSportChange(index, 'experience', parseInt(e.target.value) || 0)}
                                                 fullWidth
                                                 InputProps={{
@@ -467,7 +509,7 @@ export default function EditProfile() {
                                                 }}
                                             />
                                         </Grid>
-                                        <Grid item xs={2} md={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                        <Grid item xs={2} md={1} sx={{ display: 'flex', justifyContent: 'center' }}>
                                             <IconButton
                                                 color="error"
                                                 onClick={() => handleRemoveSport(index)}

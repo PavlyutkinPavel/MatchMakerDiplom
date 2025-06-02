@@ -57,35 +57,127 @@ import {
 } from '@mui/icons-material';
 import { useDemoRouter } from '@toolpad/core/internal';
 
-// Mock data for testing
-const mockUserTeams = [
-    { id: 1, teamName: 'FC Barcelona', teamType: 'FOOTBALL', status: 'Active team', country: 'Spain', city: 'Barcelona' },
-    { id: 2, teamName: 'LA Lakers', teamType: 'BASKETBALL', status: 'Active team', country: 'United States', city: 'Los Angeles' },
-    { id: 3, teamName: 'Tennis Club', teamType: 'TENNIS', status: 'Active team', country: 'France', city: 'Paris' }
-];
+// API Configuration
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-const mockPlayers = [
-    { id: 1, name: 'Lionel Messi', position: 'Forward', teamId: 1, avatar: '/api/placeholder/50/50', isFriend: false, country: 'Argentina', age: 34, achievements: '7x Ballon d\'Or winner', stats: { goals: 672, assists: 301 } },
-    { id: 2, name: 'LeBron James', position: 'Forward', teamId: 2, avatar: '/api/placeholder/50/50', isFriend: true, country: 'USA', age: 36, achievements: '4x NBA Champion', stats: { points: 35000, assists: 9500 } },
-    { id: 3, name: 'Rafael Nadal', position: 'Player', teamId: 3, avatar: '/api/placeholder/50/50', isFriend: false, country: 'Spain', age: 35, achievements: '21x Grand Slam winner', stats: { titles: 90, winPercentage: 83.2 } },
-    { id: 4, name: 'Cristiano Ronaldo', position: 'Forward', teamId: 1, avatar: '/api/placeholder/50/50', isFriend: true, country: 'Portugal', age: 36, achievements: '5x Ballon d\'Or winner', stats: { goals: 701, assists: 220 } },
-    { id: 5, name: 'Stephen Curry', position: 'Guard', teamId: 2, avatar: '/api/placeholder/50/50', isFriend: false, country: 'USA', age: 33, achievements: '3x NBA Champion', stats: { points: 18000, threePointers: 2800 } }
-];
+// API Service functions
+const apiService = {
+    // Fetch user teams
+    async getUserTeams() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/team`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+                },
+                credentials: 'include'
+            });
 
-const mockCoaches = [
-    { id: 101, name: 'Pep Guardiola', position: 'Head Coach', teamId: 1, avatar: '/api/placeholder/50/50', isFriend: false, country: 'Spain', experience: '15 years', achievements: '3x Champions League winner', specialty: 'Possession football' },
-    { id: 102, name: 'Frank Vogel', position: 'Head Coach', teamId: 2, avatar: '/api/placeholder/50/50', isFriend: true, country: 'USA', experience: '10 years', achievements: '1x NBA Champion', specialty: 'Defense' },
-    { id: 103, name: 'Carlos Moya', position: 'Head Coach', teamId: 3, avatar: '/api/placeholder/50/50', isFriend: false, country: 'Spain', experience: '8 years', achievements: 'Former World No.1', specialty: 'Clay court tennis' }
-];
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-// Mock data for available participants to invite
-const mockAvailableParticipants = [
-    { id: 201, name: 'Kevin De Bruyne', role: 'player', position: 'Midfielder', country: 'Belgium', age: 30, avatar: '/api/placeholder/50/50' },
-    { id: 202, name: 'Kawhi Leonard', role: 'player', position: 'Forward', country: 'USA', age: 30, avatar: '/api/placeholder/50/50' },
-    { id: 203, name: 'Jürgen Klopp', role: 'coach', position: 'Head Coach', country: 'Germany', experience: '20 years', avatar: '/api/placeholder/50/50' },
-    { id: 204, name: 'Novak Djokovic', role: 'player', position: 'Player', country: 'Serbia', age: 34, avatar: '/api/placeholder/50/50' },
-    { id: 205, name: 'Steve Kerr', role: 'coach', position: 'Head Coach', country: 'USA', experience: '8 years', avatar: '/api/placeholder/50/50' }
-];
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching user teams:', error);
+            throw error;
+        }
+    },
+
+    // Fetch team members
+    async getTeamMembers(teamId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/team/members/team/${teamId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching team members:', error);
+            throw error;
+        }
+    },
+
+    // Add team member - ИСПРАВЛЕНО
+    async addTeamMember(memberData) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/team/member`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+                },
+                credentials: 'include',
+                body: JSON.stringify(memberData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response.status === 201 || response.status === 200;
+        } catch (error) {
+            console.error('Error adding team member:', error);
+            throw error;
+        }
+    },
+
+    // Remove team member - ИСПРАВЛЕНО путь
+    async removeTeamMember(teamId, userId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/team/${teamId}/members/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response.status === 204 || response.status === 200;
+        } catch (error) {
+            console.error('Error removing team member:', error);
+            throw error;
+        }
+    },
+
+    // Get available users to invite - ИСПРАВЛЕНО на реальный эндпоинт
+    async getAvailableUsers() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/user`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching available users:', error);
+            throw error;
+        }
+    }
+};
 
 const getSportIcon = (sportType) => {
     switch (sportType) {
@@ -104,6 +196,34 @@ const getSportIcon = (sportType) => {
     }
 };
 
+// Helper function to transform backend UserTeamRelation to frontend format
+const transformMemberData = (backendMember) => {
+    return {
+        id: backendMember.userId,
+        name: backendMember.username,
+        position: backendMember.position || 'Not specified',
+        teamId: backendMember.teamId,
+        avatar: `/api/placeholder/50/50`,
+        isFriend: false,
+        country: 'Unknown',
+        teamRole: backendMember.teamRole,
+        stats: backendMember.stats || '',
+        acceptedInvite: backendMember.acceptedInvite
+    };
+};
+
+// Helper function to transform user data for invite dialog
+const transformUserData = (user) => {
+    return {
+        id: user.id,
+        username: user.userLogin || user.username,
+        position: user.position || 'Player',
+        country: user.country || 'Unknown',
+        age: user.age,
+        teamRole: 'PLAYER' // по умолчанию, можно добавить выбор роли
+    };
+};
+
 // Participants Manager Component
 export const ParticipantsManager = ({ compact = false }) => {
     const theme = useTheme();
@@ -120,26 +240,12 @@ export const ParticipantsManager = ({ compact = false }) => {
     const [openInviteDialog, setOpenInviteDialog] = React.useState(false);
     const [inviteList, setInviteList] = React.useState([]);
     const [selectedInvites, setSelectedInvites] = React.useState([]);
+    const [selectedInviteRoles, setSelectedInviteRoles] = React.useState({}); // Для хранения ролей
     const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' });
     const [filterType, setFilterType] = React.useState('all');
+    const [error, setError] = React.useState(null);
 
     React.useEffect(() => {
-        // In a real app, fetch user teams from API
-        const fetchUserTeams = async () => {
-            try {
-                // Simulating API call
-                setLoading(true);
-                setTimeout(() => {
-                    setUserTeams(mockUserTeams);
-                    setLoading(false);
-                }, 500);
-            } catch (error) {
-                console.error('Error fetching user teams:', error);
-                setUserTeams(mockUserTeams); // Fallback to mock data
-                setLoading(false);
-            }
-        };
-
         fetchUserTeams();
     }, []);
 
@@ -147,29 +253,48 @@ export const ParticipantsManager = ({ compact = false }) => {
         if (selectedTeam) {
             fetchParticipants();
         }
-    }, [selectedTeam, tabValue, filterType]);
+    }, [selectedTeam, filterType]);
+
+    const fetchUserTeams = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const teams = await apiService.getUserTeams();
+            setUserTeams(teams || []);
+        } catch (error) {
+            console.error('Error fetching user teams:', error);
+            setError('Failed to load teams. Please try again.');
+            setUserTeams([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchParticipants = async () => {
-        setLoading(true);
+        if (!selectedTeam) return;
+
         try {
-            // In a real implementation, fetch from API
-            setTimeout(() => {
-                let result = [];
+            setLoading(true);
+            setError(null);
+            const members = await apiService.getTeamMembers(selectedTeam);
 
-                if (filterType === 'player' || filterType === 'all') {
-                    result = [...result, ...mockPlayers.filter(p => p.teamId === parseInt(selectedTeam))];
-                }
+            // Transform backend data to frontend format
+            const transformedMembers = members.map(transformMemberData);
 
-                if (filterType === 'coach' || filterType === 'all') {
-                    result = [...result, ...mockCoaches.filter(c => c.teamId === parseInt(selectedTeam))];
-                }
+            // Filter by type if needed
+            let filteredMembers = transformedMembers;
+            if (filterType === 'player') {
+                filteredMembers = transformedMembers.filter(m => m.teamRole === 'PLAYER');
+            } else if (filterType === 'coach') {
+                filteredMembers = transformedMembers.filter(m => m.teamRole === 'COACH');
+            }
 
-                setParticipants(result);
-                setLoading(false);
-            }, 800);
+            setParticipants(filteredMembers);
         } catch (error) {
             console.error('Error fetching participants:', error);
-            setParticipants([]); // Clear on error
+            setError('Failed to load team members. Please try again.');
+            setParticipants([]);
+        } finally {
             setLoading(false);
         }
     };
@@ -177,11 +302,12 @@ export const ParticipantsManager = ({ compact = false }) => {
     const handleTeamChange = (event) => {
         setSelectedTeam(event.target.value);
         setPage(0);
+        setParticipants([]);
     };
 
     const handleSearchChange = (event) => {
         setSearchQuery(event.target.value);
-        setPage(0); // Reset to first page on new search
+        setPage(0);
     };
 
     const handleTabChange = (event, newValue) => {
@@ -202,56 +328,131 @@ export const ParticipantsManager = ({ compact = false }) => {
         setPage(0);
     };
 
-    const handleOpenInviteDialog = () => {
-        setInviteList(mockAvailableParticipants);
-        setOpenInviteDialog(true);
+    const handleOpenInviteDialog = async () => {
+        try {
+            setLoading(true);
+            const availableUsers = await apiService.getAvailableUsers();
+
+            // Фильтруем пользователей, которые уже не в команде
+            const currentMemberIds = participants.map(p => p.id);
+            const filteredUsers = availableUsers.filter(user => !currentMemberIds.includes(user.id));
+
+            const transformedUsers = filteredUsers.map(transformUserData);
+            setInviteList(transformedUsers);
+            setOpenInviteDialog(true);
+        } catch (error) {
+            console.error('Error loading available users:', error);
+            setSnackbar({
+                open: true,
+                message: 'Failed to load available users',
+                severity: 'error'
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleCloseInviteDialog = () => {
         setOpenInviteDialog(false);
         setSelectedInvites([]);
+        setSelectedInviteRoles({});
     };
 
     const handleSelectInvite = (participantId) => {
         setSelectedInvites(prevSelected => {
             if (prevSelected.includes(participantId)) {
+                // Remove from selected and also remove role
+                const newRoles = { ...selectedInviteRoles };
+                delete newRoles[participantId];
+                setSelectedInviteRoles(newRoles);
                 return prevSelected.filter(id => id !== participantId);
             } else {
+                // Add to selected and set default role
+                setSelectedInviteRoles(prev => ({
+                    ...prev,
+                    [participantId]: 'PLAYER'
+                }));
                 return [...prevSelected, participantId];
             }
         });
     };
 
-    const handleSendInvites = () => {
-        // In a real implementation, call API to send invites
-        setSnackbar({
-            open: true,
-            message: `Successfully sent ${selectedInvites.length} invitation${selectedInvites.length !== 1 ? 's' : ''}!`,
-            severity: 'success'
-        });
-        handleCloseInviteDialog();
+    const handleRoleChange = (userId, role) => {
+        setSelectedInviteRoles(prev => ({
+            ...prev,
+            [userId]: role
+        }));
     };
 
-    const handleAddFriend = async (participantId) => {
+    // ИСПРАВЛЕНО: отправка данных согласно UserTeamRelationDTO
+    const handleSendInvites = async () => {
+        if (!selectedTeam || selectedInvites.length === 0) return;
+
         try {
-            // In a real implementation, call API
-            // Update local state (mock implementation)
-            setParticipants(participants.map(p =>
-                p.id === participantId ? { ...p, isFriend: true } : p
-            ));
+            setLoading(true);
+
+            // Send invites for each selected user
+            const invitePromises = selectedInvites.map(userId => {
+                const selectedUser = inviteList.find(user => user.id === userId);
+                const memberData = {
+                    userId: userId,
+                    teamId: parseInt(selectedTeam),
+                    acceptedInvite: false, // Initially false, user needs to accept
+                    username: selectedUser.username,
+                    position: selectedUser.position,
+                    stats: '', // Пустая строка по умолчанию
+                    teamRole: selectedInviteRoles[userId] || 'PLAYER'
+                };
+
+                console.log('Sending member data:', memberData); // Для отладки
+                return apiService.addTeamMember(memberData);
+            });
+
+            await Promise.all(invitePromises);
 
             setSnackbar({
                 open: true,
-                message: 'Friend added successfully!',
+                message: `Successfully sent ${selectedInvites.length} invitation${selectedInvites.length !== 1 ? 's' : ''}!`,
                 severity: 'success'
             });
+
+            handleCloseInviteDialog();
+            fetchParticipants(); // Refresh the participants list
         } catch (error) {
-            console.error('Error adding friend:', error);
+            console.error('Error sending invites:', error);
             setSnackbar({
                 open: true,
-                message: 'Failed to add friend. Please try again.',
+                message: 'Failed to send invitations. Please try again.',
                 severity: 'error'
             });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveMember = async (participantId) => {
+        if (!selectedTeam) return;
+
+        try {
+            setLoading(true);
+            await apiService.removeTeamMember(selectedTeam, participantId);
+
+            setSnackbar({
+                open: true,
+                message: 'Member removed successfully!',
+                severity: 'success'
+            });
+
+            fetchParticipants(); // Refresh the participants list
+        } catch (error) {
+            console.error('Error removing member:', error);
+            setSnackbar({
+                open: true,
+                message: 'Failed to remove member. Please try again.',
+                severity: 'error'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -271,52 +472,32 @@ export const ParticipantsManager = ({ compact = false }) => {
 
     // Helper function to determine if a participant is a player or coach
     const getParticipantType = (participant) => {
-        return participant.hasOwnProperty('age') ? 'player' : 'coach';
+        return participant.teamRole === 'PLAYER' ? 'player' : 'coach';
     };
 
     const renderDetailInfo = (participant) => {
         const participantType = getParticipantType(participant);
 
-        if (participantType === 'player') {
-            return (
-                <>
-                    <Box sx={{ mb: 1 }}>
-                        <Typography variant="subtitle2" color="textSecondary">Achievements</Typography>
-                        <Typography variant="body2">{participant.achievements}</Typography>
+        return (
+            <Box>
+                <Typography variant="subtitle2" color="textSecondary">Role</Typography>
+                <Typography variant="body2">{participant.teamRole}</Typography>
+                {participant.stats && (
+                    <Box sx={{ mt: 1 }}>
+                        <Typography variant="subtitle2" color="textSecondary">Stats</Typography>
+                        <Typography variant="body2">{participant.stats}</Typography>
                     </Box>
-                    {participant.stats && (
-                        <Box>
-                            <Typography variant="subtitle2" color="textSecondary">Key Stats</Typography>
-                            <Grid container spacing={1}>
-                                {Object.entries(participant.stats).map(([key, value]) => (
-                                    <Grid item key={key}>
-                                        <Chip
-                                            size="small"
-                                            label={`${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`}
-                                            color="info"
-                                            variant="outlined"
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        </Box>
-                    )}
-                </>
-            );
-        } else {
-            return (
-                <>
-                    <Box sx={{ mb: 1 }}>
-                        <Typography variant="subtitle2" color="textSecondary">Achievements</Typography>
-                        <Typography variant="body2">{participant.achievements}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="subtitle2" color="textSecondary">Specialty</Typography>
-                        <Typography variant="body2">{participant.specialty}</Typography>
-                    </Box>
-                </>
-            );
-        }
+                )}
+                <Box sx={{ mt: 1 }}>
+                    <Typography variant="subtitle2" color="textSecondary">Status</Typography>
+                    <Chip
+                        size="small"
+                        label={participant.acceptedInvite ? "Accepted" : "Pending"}
+                        color={participant.acceptedInvite ? "success" : "warning"}
+                    />
+                </Box>
+            </Box>
+        );
     };
 
     // Compact view with cards
@@ -339,32 +520,21 @@ export const ParticipantsManager = ({ compact = false }) => {
                                         </Box>
                                     </Box>
                                     <Divider sx={{ mb: 2 }} />
-                                    <Typography variant="body2" color="textSecondary">
-                                        {participantType === 'player' ? `Age: ${participant.age}` : `Experience: ${participant.experience}`}
-                                    </Typography>
+                                    {renderDetailInfo(participant)}
                                     <Box mt={2} display="flex" justifyContent="space-between" alignItems="center">
                                         <Chip
                                             size="small"
                                             label={participantType === 'player' ? 'Player' : 'Coach'}
                                             color={participantType === 'player' ? 'primary' : 'secondary'}
                                         />
-                                        {participant.isFriend ? (
-                                            <Chip
-                                                size="small"
-                                                label="Friend"
-                                                color="success"
-                                                icon={<PersonIcon />}
-                                            />
-                                        ) : (
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                startIcon={<PersonAddIcon />}
-                                                onClick={() => handleAddFriend(participant.id)}
-                                            >
-                                                Add Friend
-                                            </Button>
-                                        )}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            color="error"
+                                            onClick={() => handleRemoveMember(participant.id)}
+                                        >
+                                            Remove
+                                        </Button>
                                     </Box>
                                 </CardContent>
                             </Card>
@@ -385,11 +555,8 @@ export const ParticipantsManager = ({ compact = false }) => {
                             <TableCell>Profile</TableCell>
                             <TableCell>Name</TableCell>
                             <TableCell>Position</TableCell>
-                            <TableCell>Country</TableCell>
-                            <TableCell>Type</TableCell>
-                            <TableCell>
-                                {filterType === 'player' || filterType === 'all' ? 'Age' : 'Experience'}
-                            </TableCell>
+                            <TableCell>Role</TableCell>
+                            <TableCell>Status</TableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -403,7 +570,6 @@ export const ParticipantsManager = ({ compact = false }) => {
                                     </TableCell>
                                     <TableCell>{participant.name}</TableCell>
                                     <TableCell>{participant.position}</TableCell>
-                                    <TableCell>{participant.country}</TableCell>
                                     <TableCell>
                                         <Chip
                                             size="small"
@@ -412,15 +578,18 @@ export const ParticipantsManager = ({ compact = false }) => {
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {participantType === 'player' ? participant.age : participant.experience}
+                                        <Chip
+                                            size="small"
+                                            label={participant.acceptedInvite ? "Accepted" : "Pending"}
+                                            color={participant.acceptedInvite ? "success" : "warning"}
+                                        />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <Box display="flex" justifyContent="flex-end">
+                                        <Box display="flex" justifyContent="flex-end" gap={1}>
                                             <Tooltip title="View Details">
                                                 <IconButton
                                                     size="small"
                                                     color="info"
-                                                    sx={{ mr: 1 }}
                                                     onClick={() => {
                                                         setSnackbar({
                                                             open: true,
@@ -432,23 +601,14 @@ export const ParticipantsManager = ({ compact = false }) => {
                                                     <HelpIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
-                                            {participant.isFriend ? (
-                                                <Chip
-                                                    size="small"
-                                                    label="Friend"
-                                                    color="success"
-                                                    icon={<PersonIcon />}
-                                                />
-                                            ) : (
-                                                <Button
-                                                    variant="outlined"
-                                                    size="small"
-                                                    startIcon={<PersonAddIcon />}
-                                                    onClick={() => handleAddFriend(participant.id)}
-                                                >
-                                                    Add Friend
-                                                </Button>
-                                            )}
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleRemoveMember(participant.id)}
+                                            >
+                                                Remove
+                                            </Button>
                                         </Box>
                                     </TableCell>
                                 </TableRow>
@@ -473,11 +633,18 @@ export const ParticipantsManager = ({ compact = false }) => {
                             color="primary"
                             startIcon={<AddIcon />}
                             onClick={handleOpenInviteDialog}
+                            disabled={!selectedTeam || loading}
                         >
                             Invite Participants
                         </Button>
                     )}
                 </Box>
+
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                )}
 
                 <Grid container spacing={2} alignItems="center" marginBottom={2}>
                     <Grid item xs={12} md={compact ? 6 : 4}>
@@ -488,6 +655,7 @@ export const ParticipantsManager = ({ compact = false }) => {
                                 value={selectedTeam}
                                 label="Select Team"
                                 onChange={handleTeamChange}
+                                disabled={loading}
                                 startAdornment={userTeams.length > 0 && selectedTeam &&
                                     React.cloneElement(
                                         getSportIcon(userTeams.find(team => team.id === parseInt(selectedTeam))?.teamType || 'FOOTBALL'),
@@ -511,6 +679,7 @@ export const ParticipantsManager = ({ compact = false }) => {
                             size={compact ? "small" : "medium"}
                             value={searchQuery}
                             onChange={handleSearchChange}
+                            disabled={loading}
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -518,7 +687,7 @@ export const ParticipantsManager = ({ compact = false }) => {
                                     </InputAdornment>
                                 ),
                             }}
-                            placeholder="Search by name, position, country..."
+                            placeholder="Search by name, position..."
                         />
                     </Grid>
                     {!compact && (
@@ -530,6 +699,7 @@ export const ParticipantsManager = ({ compact = false }) => {
                                     value={filterType}
                                     label="Filter By Type"
                                     onChange={handleFilterTypeChange}
+                                    disabled={loading}
                                     startIcon={<FilterListIcon />}
                                 >
                                     <MenuItem value="all">All Participants</MenuItem>
@@ -574,7 +744,7 @@ export const ParticipantsManager = ({ compact = false }) => {
                 )}
             </Paper>
 
-            {/* Invite Dialog */}
+            {/* Invite Dialog - ИСПРАВЛЕНО */}
             <Dialog open={openInviteDialog} onClose={handleCloseInviteDialog} maxWidth="md" fullWidth>
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -593,11 +763,10 @@ export const ParticipantsManager = ({ compact = false }) => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell padding="checkbox"></TableCell>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Role</TableCell>
+                                    <TableCell>Username</TableCell>
                                     <TableCell>Position</TableCell>
                                     <TableCell>Country</TableCell>
-                                    <TableCell>Details</TableCell>
+                                    <TableCell>Team Role</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -606,7 +775,6 @@ export const ParticipantsManager = ({ compact = false }) => {
                                         key={person.id}
                                         hover
                                         selected={selectedInvites.includes(person.id)}
-                                        onClick={() => handleSelectInvite(person.id)}
                                         sx={{ cursor: 'pointer' }}
                                     >
                                         <TableCell padding="checkbox">
@@ -616,24 +784,36 @@ export const ParticipantsManager = ({ compact = false }) => {
                                                 label={selectedInvites.includes(person.id) ? "Selected" : "Select"}
                                                 color={selectedInvites.includes(person.id) ? "success" : "default"}
                                                 variant={selectedInvites.includes(person.id) ? "filled" : "outlined"}
+                                                onClick={() => handleSelectInvite(person.id)}
                                             />
                                         </TableCell>
-                                        <TableCell>
-                                            <Box display="flex" alignItems="center">
-                                                <Avatar src={person.avatar} alt={person.name} sx={{ mr: 1, width: 40, height: 40 }} />
-                                                {person.name}
-                                            </Box>
+                                        <TableCell onClick={() => handleSelectInvite(person.id)}>
+                                            {person.username}
+                                        </TableCell>
+                                        <TableCell onClick={() => handleSelectInvite(person.id)}>
+                                            {person.position}
+                                        </TableCell>
+                                        <TableCell onClick={() => handleSelectInvite(person.id)}>
+                                            {person.country}
                                         </TableCell>
                                         <TableCell>
-                                            <Chip
-                                                size="small"
-                                                label={person.role === 'player' ? 'Player' : 'Coach'}
-                                                color={person.role === 'player' ? 'primary' : 'secondary'}
-                                            />
+                                            {selectedInvites.includes(person.id) ? (
+                                                <FormControl size="small" sx={{ minWidth: 100 }}>
+                                                    <Select
+                                                        value={selectedInviteRoles[person.id] || 'PLAYER'}
+                                                        onChange={(e) => handleRoleChange(person.id, e.target.value)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <MenuItem value="PLAYER">Player</MenuItem>
+                                                        <MenuItem value="COACH">Coach</MenuItem>
+                                                    </Select>
+                                                </FormControl>
+                                            ) : (
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Select first
+                                                </Typography>
+                                            )}
                                         </TableCell>
-                                        <TableCell>{person.position}</TableCell>
-                                        <TableCell>{person.country}</TableCell>
-                                        <TableCell>{person.role === 'player' ? `Age: ${person.age}` : `Experience: ${person.experience}`}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -641,13 +821,13 @@ export const ParticipantsManager = ({ compact = false }) => {
                     </TableContainer>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseInviteDialog}>Cancel</Button>
+                    <Button onClick={handleCloseInviteDialog} disabled={loading}>Cancel</Button>
                     <Button
                         variant="contained"
                         color="primary"
                         startIcon={<MailIcon />}
                         onClick={handleSendInvites}
-                        disabled={selectedInvites.length === 0}
+                        disabled={selectedInvites.length === 0 || loading}
                     >
                         Send {selectedInvites.length} Invitation{selectedInvites.length !== 1 ? 's' : ''}
                     </Button>

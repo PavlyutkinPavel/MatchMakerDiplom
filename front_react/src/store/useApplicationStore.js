@@ -6,6 +6,7 @@ import singleEvent from './modules/singleEvent';
 import team from './modules/team';
 import user from './modules/user';
 import twoTeamEvent from './modules/twoTeamEvent';
+import tableEvent from './modules/tableEvent';
 
 const useApplicationStore = create((set, get) => ({
   ...loader(set, get),
@@ -15,6 +16,7 @@ const useApplicationStore = create((set, get) => ({
   ...singleEvent(set, get),
   ...user(set, get),
   ...team(set, get),
+  ...tableEvent(set, get),
 }));
 
 export default useApplicationStore;

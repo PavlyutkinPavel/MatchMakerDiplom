@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.List;
 
@@ -177,16 +179,24 @@ public class UserController {
     }
 
     @GetMapping("/avatar")
-    public ResponseEntity<byte[]> getAvatar(Principal principal) {
-        UserProfile user = userProfileRepository.findByUsername(principal.getName()).orElseThrow(UserNotFoundException::new);
+    public ResponseEntity<byte[]> getAvatar(Principal principal) throws IOException {
+        UserProfile user = userProfileRepository
+                .findByUsername(principal.getName())
+                .orElseThrow(UserNotFoundException::new);
+
         byte[] image = user.getAvatar();
-
         if (image == null || image.length == 0) {
-            return ResponseEntity.notFound().build();
+            // Читаем дефолтный аватар (из папки resources/static или public)
+            byte[] defaultAvatar = Files.readAllBytes(
+                    Paths.get("C:\\Users\\User\\IdeaProjects\\MatchMakerDiplom\\front_react\\public\\assets\\images\\user\\avatar2.png")
+            );
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(defaultAvatar);
         }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.ALL);
-        return new ResponseEntity<>(image, headers, HttpStatus.OK);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG) // или MEDIA_TYPE подходящий по типу аватара
+                .body(image);
     }
+
 }

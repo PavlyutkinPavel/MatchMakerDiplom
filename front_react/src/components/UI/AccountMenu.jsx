@@ -38,8 +38,8 @@ export default function AccountMenu({ username = 'User', avatar_url = '' }) {
     }
 
     const handleLogout = () => {
-        //TODO ������ local
         sessionStorage.removeItem("jwt");
+        sessionStorage.removeItem('userId');
         logOut()
         setAnchorEl(null);
         navigate('/');
@@ -47,11 +47,31 @@ export default function AccountMenu({ username = 'User', avatar_url = '' }) {
 
     return (
         <React.Fragment>
-            <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', mr: 1 }}>
                 <Tooltip title="Account settings">
-                    <IconButton onClick={handleClick} size="small" sx={{ ml: 2 }}>
+                    <IconButton
+                        onClick={handleClick}
+                        size="small"
+                        sx={{
+                            p: 0,         // Убираем padding
+                            m: 0,         // Убираем margin (если нужно)
+                            borderRadius: '50%', // Делаем кнопку круглой
+                            overflow: 'hidden',  // Обрезаем углы
+                            '&:hover': {
+                                backgroundColor: 'transparent', // Убираем фон при наведении
+                            },
+                            '& .MuiTouchRipple-root': { // Отключаем анимацию ripple-эффекта (опционально)
+                                display: 'none',
+                            },
+                        }}
+                    >
                         <Avatar
-                            sx={{ width: 40, height: 40 }}
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                // Если нужно, можно добавить border (опционально)
+                                border: '1px solid transparent',
+                            }}
                             src={avatar_url || undefined}
                         >
                             {!avatar_url && username[0]?.toUpperCase()}

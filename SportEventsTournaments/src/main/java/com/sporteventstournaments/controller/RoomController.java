@@ -3,23 +3,24 @@ package com.sporteventstournaments.controller;
 import com.sporteventstournaments.domain.Message;
 import com.sporteventstournaments.domain.Room;
 import com.sporteventstournaments.repository.RoomRepository;
-import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/rooms")
 @CrossOrigin("http://localhost:3000")
 public class RoomController {
 
-    private RoomRepository roomRepository;
+    private final RoomRepository roomRepository;
+
+    @Data
+    public static class RoomDTO {
+        public String roomId;
+    }
 
 
     public RoomController(RoomRepository roomRepository) {
@@ -40,7 +41,7 @@ public class RoomController {
         //create new room
         Room room = new Room();
         room.setRoomId(roomId);
-        Room savedRoom = roomRepository.save(room);
+        roomRepository.save(room);
         return ResponseEntity.status(HttpStatus.CREATED).body(room);
 
     }

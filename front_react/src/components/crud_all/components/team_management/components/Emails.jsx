@@ -30,7 +30,8 @@ import {
     Snackbar,
     Alert,
     Tooltip,
-    CircularProgress
+    CircularProgress,
+    Pagination
 } from '@mui/material';
 import {
     Inbox as InboxIcon,
@@ -45,166 +46,305 @@ import {
     Close as CloseIcon
 } from '@mui/icons-material';
 
-// Компонент для отображения электронных писем
+// API base URL - update with your actual API URL
+const API_BASE_URL = 'http://localhost:8080/emails';
+
+// Utility for API requests
+const apiRequest = async (endpoint, options = {}) => {
+    const url = `${API_BASE_URL}${endpoint}`;
+
+    // Get authentication token from localStorage or your auth service
+    const token = localStorage.getItem('authToken');
+
+    const config = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
+        },
+        ...options,
+    };
+
+    try {
+        const response = await fetch(url, config);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Check if there's content to parse
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        } else {
+            return null; // For requests without response body (e.g., DELETE)
+        }
+    } catch (error) {
+        console.error('API request error:', error);
+        throw error;
+    }
+};
+
 const Emails = () => {
-    // Состояния
+    // Main states
     const [activeTab, setActiveTab] = useState('received');
     const [emails, setEmails] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedEmail, setSelectedEmail] = useState(null);
     const [composeOpen, setComposeOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const pageSize = 20;
+
+    // Filters
+    const [filters, setFilters] = useState({
+        type: '',
+        unread: null,
+        status: ''
+    });
+
+    // Notifications
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
 
-    // Состояние формы для составления письма
+    // Compose form
     const [composeForm, setComposeForm] = useState({
         type: 'info',
         recipients: '',
         subject: '',
-        message: ''
+        message: '',
+        teamInfo: {
+            name: '',
+            sport: '',
+            players: 0
+        },
+        eventInfo: {
+            name: '',
+            date: '',
+            location: '',
+            teams: 0
+        }
     });
 
-    // Имитация загрузки данных с сервера
-    useEffect(() => {
-        // Имитация задержки загрузки
+    // Fetch emails from server
+    const fetchEmails = async (page = 0, resetEmails = true) => {
         setLoading(true);
-        setTimeout(() => {
-            setEmails(generateMockEmails());
+        try {
+            let endpoint = '';
+            const params = new URLSearchParams({
+                page: page.toString(),
+                size: pageSize.toString()
+            });
+
+            // Add filters
+            if (filters.type) params.append('type', filters.type);
+
+            if (activeTab === 'received') {
+                if (filters.unread !== null) params.append('unread', filters.unread.toString());
+                endpoint = `/received?${params.toString()}`;
+            } else {
+                if (filters.status) params.append('status', filters.status);
+                endpoint = `/sent?${params.toString()}`;
+            }
+
+            const response = await apiRequest(endpoint);
+
+            if (resetEmails) {
+                setEmails(response.content || []);
+            } else {
+                setEmails(prev => [...prev, ...(response.content || [])]);
+            }
+
+            setTotalPages(response.totalPages || 0);
+            setCurrentPage(response.number || 0);
+        } catch (error) {
+            showSnackbar('Error loading emails', 'error');
+        } finally {
             setLoading(false);
-        }, 1000);
-    }, [activeTab]);
-
-    // Генерация тестовых данных для писем
-    const generateMockEmails = () => {
-        const mockEmails = [];
-
-        if (activeTab === 'received') {
-            // Team invitation emails
-            mockEmails.push(
-                {
-                    id: 1,
-                    type: 'team_invite',
-                    sender: 'FC Barcelona',
-                    senderAvatar: '/api/placeholder/40/40',
-                    subject: 'Team Invitation',
-                    message: 'We invite you to join our football team for the upcoming season. Our training sessions are held on Tuesdays and Thursdays.',
-                    teamInfo: {
-                        id: 101,
-                        name: 'FC Barcelona',
-                        sport: 'Football',
-                        players: 22
-                    },
-                    date: '2025-05-10T14:30:00',
-                    unread: true,
-                },
-                {
-                    id: 2,
-                    type: 'event_invite',
-                    sender: 'City Sports Federation',
-                    senderAvatar: '/api/placeholder/40/40',
-                    subject: 'Tournament Invitation',
-                    message: 'We invite your team to participate in the annual city basketball tournament. The prize pool is 50,000 rubles.',
-                    eventInfo: {
-                        id: 201,
-                        name: 'City Basketball Tournament',
-                        date: '2025-06-15T10:00:00',
-                        location: 'Energy Sports Complex',
-                        teams: 16
-                    },
-                    date: '2025-05-08T09:15:00',
-                    unread: true,
-                }
-            );
-
-            // Informational emails
-            mockEmails.push(
-                {
-                    id: 3,
-                    type: 'info',
-                    sender: 'System',
-                    senderAvatar: '/api/placeholder/40/40',
-                    subject: 'Platform Update',
-                    message: 'Dear users, we have updated our platform. You can now create your own tournaments and invite teams to participate. If you have any questions, please contact support.',
-                    date: '2025-05-05T11:20:00',
-                    unread: false,
-                },
-                {
-                    id: 4,
-                    type: 'info',
-                    sender: 'Administration',
-                    senderAvatar: '/api/placeholder/40/40',
-                    subject: 'Scheduled Maintenance',
-                    message: 'We inform you that technical maintenance will take place on May 20 from 02:00 to 05:00. During this time, the platform will be unavailable.',
-                    date: '2025-05-03T16:45:00',
-                    unread: false,
-                }
-            );
-        } else if (activeTab === 'sent') {
-            // Sent emails
-            mockEmails.push(
-                {
-                    id: 101,
-                    type: 'team_invite',
-                    recipient: 'Mikhail Ivanov',
-                    subject: 'Invitation to Team "Dynamo"',
-                    message: 'I invite you to join our football team "Dynamo". Trainings are held on Mondays and Wednesdays at 18:00.',
-                    teamInfo: {
-                        id: 102,
-                        name: 'Dynamo',
-                        sport: 'Football',
-                        players: 18
-                    },
-                    date: '2025-05-09T13:20:00',
-                    status: 'pending'
-                },
-                {
-                    id: 102,
-                    type: 'event_invite',
-                    recipient: 'Team "Spartak"',
-                    subject: 'Friendly Match Invitation',
-                    message: 'We invite your team to a friendly match this Sunday. Kickoff at 14:00.',
-                    eventInfo: {
-                        id: 202,
-                        name: 'Friendly Match',
-                        date: '2025-05-18T14:00:00',
-                        location: 'Youth Stadium',
-                        teams: 2
-                    },
-                    date: '2025-05-07T17:10:00',
-                    status: 'accepted'
-                },
-                {
-                    id: 103,
-                    type: 'info',
-                    recipient: 'All Participants',
-                    subject: 'Tournament Date Change',
-                    message: 'Please be informed that the tournament date has been changed from May 25 to June 1 due to weather conditions.',
-                    date: '2025-05-02T10:05:00',
-                    status: 'sent'
-                }
-            );
         }
-
-        return mockEmails;
     };
 
-    // Обработчики
+    // Fetch unread count
+    const fetchUnreadCount = async () => {
+        try {
+            const response = await apiRequest('/unread-count');
+            setUnreadCount(response.count || 0);
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+        }
+    };
+
+    // Fetch specific email by ID
+    const fetchEmailById = async (emailId) => {
+        try {
+            const email = await apiRequest(`/${emailId}`);
+            setSelectedEmail(email);
+
+            // Update email status in list if it was unread
+            setEmails(prev => prev.map(e =>
+                e.id === emailId ? { ...e, unread: false } : e
+            ));
+
+            // Update unread count
+            fetchUnreadCount();
+        } catch (error) {
+            showSnackbar('Error loading email details', 'error');
+        }
+    };
+
+    // Send email
+    const sendEmail = async () => {
+        try {
+            // Parse recipients from comma-separated string to array
+            const recipientsList = composeForm.recipients.split(',').map(r => r.trim());
+
+            // Prepare email data based on type
+            const emailData = {
+                type: composeForm.type,
+                recipients: recipientsList,
+                subject: composeForm.subject,
+                message: composeForm.message
+            };
+
+            // Add additional info based on email type
+            if (composeForm.type === 'team_invite') {
+                emailData.teamInfo = composeForm.teamInfo;
+            } else if (composeForm.type === 'event_invite') {
+                emailData.eventInfo = composeForm.eventInfo;
+            }
+
+            await apiRequest('/send', {
+                method: 'POST',
+                body: JSON.stringify(emailData)
+            });
+
+            showSnackbar('Email sent successfully', 'success');
+            handleComposeClose();
+
+            // Refresh email list if we're on the "Sent" tab
+            if (activeTab === 'sent') {
+                fetchEmails(0);
+            }
+        } catch (error) {
+            showSnackbar('Error sending email', 'error');
+        }
+    };
+
+    // Accept invitation
+    const acceptInvitation = async (emailId) => {
+        try {
+            const response = await apiRequest(`/${emailId}/accept`, { method: 'POST' });
+            showSnackbar('Invitation accepted', 'success');
+
+            // Update email in list
+            setEmails(prev => prev.map(email =>
+                email.id === emailId ? { ...email, status: 'accepted' } : email
+            ));
+
+            if (selectedEmail && selectedEmail.id === emailId) {
+                setSelectedEmail(prev => ({ ...prev, status: 'accepted' }));
+            }
+        } catch (error) {
+            showSnackbar('Error accepting invitation', 'error');
+        }
+    };
+
+    // Decline invitation
+    const declineInvitation = async (emailId) => {
+        try {
+            const response = await apiRequest(`/${emailId}/decline`, { method: 'POST' });
+            showSnackbar('Invitation declined', 'error');
+
+            // Update email in list
+            setEmails(prev => prev.map(email =>
+                email.id === emailId ? { ...email, status: 'declined' } : email
+            ));
+
+            if (selectedEmail && selectedEmail.id === emailId) {
+                setSelectedEmail(prev => ({ ...prev, status: 'declined' }));
+            }
+        } catch (error) {
+            showSnackbar('Error declining invitation', 'error');
+        }
+    };
+
+    // Delete email
+    const deleteEmail = async (emailId) => {
+        try {
+            await apiRequest(`/${emailId}`, { method: 'DELETE' });
+            showSnackbar('Email deleted', 'info');
+
+            // Remove email from list
+            setEmails(prev => prev.filter(email => email.id !== emailId));
+
+            // Clear selection if deleted email was selected
+            if (selectedEmail && selectedEmail.id === emailId) {
+                setSelectedEmail(null);
+            }
+
+            // Update unread count
+            fetchUnreadCount();
+        } catch (error) {
+            showSnackbar('Error deleting email', 'error');
+        }
+    };
+
+    // Mark email as read
+    const markAsRead = async (emailId) => {
+        try {
+            await apiRequest(`/${emailId}/mark-read`, { method: 'PATCH' });
+
+            // Update email in list
+            setEmails(prev => prev.map(email =>
+                email.id === emailId ? { ...email, unread: false } : email
+            ));
+
+            // Update unread count
+            fetchUnreadCount();
+        } catch (error) {
+            console.error('Error marking email as read:', error);
+        }
+    };
+
+    // Show notification
+    const showSnackbar = (message, severity = 'success') => {
+        setSnackbar({
+            open: true,
+            message,
+            severity
+        });
+    };
+
+    // Effects
+    useEffect(() => {
+        fetchEmails(0);
+        fetchUnreadCount();
+    }, [activeTab, filters]);
+
+    // Event handlers
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
         setSelectedEmail(null);
+        setCurrentPage(0);
+        // Reset filters on tab change
+        setFilters({
+            type: '',
+            unread: null,
+            status: ''
+        });
     };
 
-    const handleEmailSelect = (email) => {
-        setSelectedEmail(email);
+    const handleEmailSelect = async (email) => {
+        await fetchEmailById(email.id);
 
-        // Если письмо было непрочитанным, помечаем его как прочитанное
-        if (email.unread) {
-            setEmails(emails.map(e =>
-                e.id === email.id ? { ...e, unread: false } : e
-            ));
+        // Mark as read if this is an unread received email
+        if (activeTab === 'received' && email.unread) {
+            await markAsRead(email.id);
         }
     };
 
@@ -218,110 +358,57 @@ const Emails = () => {
 
     const handleComposeClose = () => {
         setComposeOpen(false);
-        // Сбрасываем форму
+        // Reset form
         setComposeForm({
             type: 'info',
             recipients: '',
             subject: '',
-            message: ''
+            message: '',
+            teamInfo: { name: '', sport: '', players: 0 },
+            eventInfo: { name: '', date: '', location: '', teams: 0 }
         });
     };
 
     const handleComposeChange = (e) => {
         const { name, value } = e.target;
-        setComposeForm({
-            ...composeForm,
-            [name]: value
-        });
-    };
 
-    const handleComposeSend = () => {
-        // Здесь был бы API-запрос для отправки письма
-
-        // Добавляем письмо в список отправленных (только для демонстрации)
-        const newEmail = {
-            id: Date.now(),
-            type: composeForm.type,
-            recipient: composeForm.recipients,
-            subject: composeForm.subject,
-            message: composeForm.message,
-            date: new Date().toISOString(),
-            status: 'sent'
-        };
-
-        if (activeTab === 'sent') {
-            setEmails([newEmail, ...emails]);
+        if (name.startsWith('team.')) {
+            const field = name.split('.')[1];
+            setComposeForm(prev => ({
+                ...prev,
+                teamInfo: { ...prev.teamInfo, [field]: value }
+            }));
+        } else if (name.startsWith('event.')) {
+            const field = name.split('.')[1];
+            setComposeForm(prev => ({
+                ...prev,
+                eventInfo: { ...prev.eventInfo, [field]: value }
+            }));
+        } else {
+            setComposeForm(prev => ({ ...prev, [name]: value }));
         }
-
-        // Показываем уведомление
-        setSnackbar({
-            open: true,
-            message: 'The email was sent successfully',
-            severity: 'success'
-        });
-
-        handleComposeClose();
     };
 
-    const handleApprove = (emailId) => {
-        // Здесь был бы API-запрос для одобрения приглашения
-
-        // Обновляем статус письма (только для демонстрации)
-        setEmails(emails.map(email =>
-            email.id === emailId
-                ? { ...email, status: 'accepted' }
-                : email
-        ));
-
-        setSnackbar({
-            open: true,
-            message: 'Invitation accepted',
-            severity: 'success'
-        });
+    const handlePageChange = (event, newPage) => {
+        setCurrentPage(newPage - 1);
+        fetchEmails(newPage - 1);
     };
 
-    const handleDecline = (emailId) => {
-        // Здесь был бы API-запрос для отклонения приглашения
-
-        // Обновляем статус письма (только для демонстрации)
-        setEmails(emails.map(email =>
-            email.id === emailId
-                ? { ...email, status: 'declined' }
-                : email
-        ));
-
-        setSnackbar({
-            open: true,
-            message: 'Invitation declined',
-            severity: 'error'
-        });
+    const handleFilterChange = (filterName, value) => {
+        setFilters(prev => ({ ...prev, [filterName]: value }));
+        setCurrentPage(0);
     };
 
-    const handleDelete = (emailId) => {
-        // Здесь был бы API-запрос для удаления письма
-
-        // Удаляем письмо из списка (только для демонстрации)
-        setEmails(emails.filter(email => email.id !== emailId));
-
-        if (selectedEmail && selectedEmail.id === emailId) {
-            setSelectedEmail(null);
-        }
-
-        setSnackbar({
-            open: true,
-            message: 'The mail was deleted',
-            severity: 'info'
-        });
+    const handleRefresh = () => {
+        fetchEmails(0);
+        fetchUnreadCount();
     };
 
     const handleCloseSnackbar = () => {
-        setSnackbar({
-            ...snackbar,
-            open: false
-        });
+        setSnackbar(prev => ({ ...prev, open: false }));
     };
 
-    // Получение иконки для типа письма
+    // Display utilities
     const getEmailTypeIcon = (type) => {
         switch (type) {
             case 'team_invite':
@@ -334,7 +421,6 @@ const Emails = () => {
         }
     };
 
-    // Получение метки для типа письма
     const getEmailTypeLabel = (type) => {
         switch (type) {
             case 'team_invite':
@@ -347,8 +433,6 @@ const Emails = () => {
         }
     };
 
-
-    // Получение индикатора для состояния письма
     const getStatusChip = (status) => {
         switch (status) {
             case 'accepted':
@@ -363,9 +447,9 @@ const Emails = () => {
         }
     };
 
-    // Рендеринг содержимого письма в зависимости от его типа
     const renderEmailContent = (email) => {
         if (!email) return null;
+
         switch (email.type) {
             case 'team_invite':
                 return (
@@ -373,34 +457,36 @@ const Emails = () => {
                         <Typography variant="body1" paragraph>
                             {email.message}
                         </Typography>
-                        <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                                Team Information:
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Name:</strong> {email.teamInfo.name}
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Sport:</strong> {email.teamInfo.sport}
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Number of Players:</strong> {email.teamInfo.players}
-                            </Typography>
-                        </Paper>
-                        {activeTab === 'received' && (
+                        {email.teamInfo && (
+                            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Team Information:
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Name:</strong> {email.teamInfo.name}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Sport:</strong> {email.teamInfo.sport}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Number of Players:</strong> {email.teamInfo.players}
+                                </Typography>
+                            </Paper>
+                        )}
+                        {activeTab === 'received' && email.status !== 'accepted' && email.status !== 'declined' && (
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     startIcon={<PersonAddIcon />}
-                                    onClick={() => handleApprove(email.id)}
+                                    onClick={() => acceptInvitation(email.id)}
                                 >
                                     Accept Invitation
                                 </Button>
                                 <Button
                                     variant="outlined"
                                     color="error"
-                                    onClick={() => handleDecline(email.id)}
+                                    onClick={() => declineInvitation(email.id)}
                                 >
                                     Decline
                                 </Button>
@@ -414,37 +500,39 @@ const Emails = () => {
                         <Typography variant="body1" paragraph>
                             {email.message}
                         </Typography>
-                        <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                                Event Information:
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Name:</strong> {email.eventInfo.name}
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Date:</strong> {new Date(email.eventInfo.date).toLocaleString()}
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Location:</strong> {email.eventInfo.location}
-                            </Typography>
-                            <Typography variant="body2">
-                                <strong>Number of Teams:</strong> {email.eventInfo.teams}
-                            </Typography>
-                        </Paper>
-                        {activeTab === 'received' && (
+                        {email.eventInfo && (
+                            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'background.paper' }}>
+                                <Typography variant="subtitle1" fontWeight="bold">
+                                    Event Information:
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Name:</strong> {email.eventInfo.name}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Date:</strong> {new Date(email.eventInfo.date).toLocaleString()}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Location:</strong> {email.eventInfo.location}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Number of Teams:</strong> {email.eventInfo.teams}
+                                </Typography>
+                            </Paper>
+                        )}
+                        {activeTab === 'received' && email.status !== 'accepted' && email.status !== 'declined' && (
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <Button
                                     variant="contained"
                                     color="primary"
                                     startIcon={<EventIcon />}
-                                    onClick={() => handleApprove(email.id)}
+                                    onClick={() => acceptInvitation(email.id)}
                                 >
                                     Participate
                                 </Button>
                                 <Button
                                     variant="outlined"
                                     color="error"
-                                    onClick={() => handleDecline(email.id)}
+                                    onClick={() => declineInvitation(email.id)}
                                 >
                                     Decline
                                 </Button>
@@ -462,22 +550,18 @@ const Emails = () => {
         }
     };
 
-
-    // Количество непрочитанных писем
-    const unreadCount = emails.filter(email => email.unread).length;
-
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            {/* Заголовок */}
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
             <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
                 <Typography variant="h5" fontWeight="bold">
                     MatchMaker Mails & Notifications
                 </Typography>
             </Box>
 
-            {/* Основной контент */}
+            {/* Main content */}
             <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-                {/* Левая панель - список писем */}
+                {/* Left panel - email list */}
                 <Box
                     sx={{
                         width: selectedEmail ? { xs: 0, md: 320 } : '100%',
@@ -487,7 +571,7 @@ const Emails = () => {
                         borderColor: 'divider'
                     }}
                 >
-                    {/* Вкладки и кнопки */}
+                    {/* Tabs and buttons */}
                     <Box sx={{ p: 1, bgcolor: 'background.paper', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Tabs value={activeTab} onChange={handleTabChange} aria-label="email tabs">
                             <Tab
@@ -524,102 +608,162 @@ const Emails = () => {
                                     <EmailIcon />
                                 </IconButton>
                             </Tooltip>
-                            <Tooltip title="Update">
-                                <IconButton onClick={() => setEmails(generateMockEmails())}>
+                            <Tooltip title="Refresh">
+                                <IconButton onClick={handleRefresh}>
                                     <RefreshIcon />
                                 </IconButton>
                             </Tooltip>
                         </Box>
                     </Box>
 
+                    {/* Filters */}
+                    <Box sx={{ p: 1, display: 'flex', gap: 1 }}>
+                        <FormControl size="small" sx={{ minWidth: 100 }}>
+                            <InputLabel>Type</InputLabel>
+                            <Select
+                                value={filters.type}
+                                label="Type"
+                                onChange={(e) => handleFilterChange('type', e.target.value)}
+                            >
+                                <MenuItem value="">All</MenuItem>
+                                <MenuItem value="info">Info</MenuItem>
+                                <MenuItem value="team_invite">Team</MenuItem>
+                                <MenuItem value="event_invite">Event</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        {activeTab === 'received' ? (
+                            <FormControl size="small" sx={{ minWidth: 100 }}>
+                                <InputLabel>Status</InputLabel>
+                                <Select
+                                    value={filters.unread === null ? '' : filters.unread.toString()}
+                                    label="Status"
+                                    onChange={(e) => handleFilterChange('unread', e.target.value === '' ? null : e.target.value === 'true')}
+                                >
+                                    <MenuItem value="">All</MenuItem>
+                                    <MenuItem value="true">Unread</MenuItem>
+                                    <MenuItem value="false">Read</MenuItem>
+                                </Select>
+                            </FormControl>
+                        ) : (
+                            <FormControl size="small" sx={{ minWidth: 100 }}>
+                                <InputLabel>Status</InputLabel>
+                                <Select
+                                    value={filters.status}
+                                    label="Status"
+                                    onChange={(e) => handleFilterChange('status', e.target.value)}
+                                >
+                                    <MenuItem value="">All</MenuItem>
+                                    <MenuItem value="sent">Sent</MenuItem>
+                                    <MenuItem value="pending">Pending</MenuItem>
+                                    <MenuItem value="accepted">Accepted</MenuItem>
+                                    <MenuItem value="declined">Declined</MenuItem>
+                                </Select>
+                            </FormControl>
+                        )}
+                    </Box>
+
                     <Divider />
 
-                    {/* Список писем */}
+                    {/* Email list */}
                     <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
                         {loading ? (
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <CircularProgress />
                             </Box>
                         ) : emails.length > 0 ? (
-                            <List sx={{ p: 0 }}>
-                                {emails.map((email) => (
-                                    <ListItem
-                                        key={email.id}
-                                        alignItems="flex-start"
-                                        button
-                                        divider
-                                        onClick={() => handleEmailSelect(email)}
-                                        sx={{
-                                            bgcolor: email.unread ? 'action.hover' : 'inherit',
-                                            '&:hover': { bgcolor: 'action.selected' }
-                                        }}
-                                    >
-                                        <ListItemAvatar>
-                                            <Badge
-                                                overlap="circular"
-                                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                                                badgeContent={
+                            <>
+                                <List sx={{ p: 0 }}>
+                                    {emails.map((email) => (
+                                        <ListItem
+                                            key={email.id}
+                                            alignItems="flex-start"
+                                            button
+                                            divider
+                                            onClick={() => handleEmailSelect(email)}
+                                            sx={{
+                                                bgcolor: email.unread ? 'action.hover' : 'inherit',
+                                                '&:hover': { bgcolor: 'action.selected' }
+                                            }}
+                                        >
+                                            <ListItemAvatar>
+                                                <Badge
+                                                    overlap="circular"
+                                                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                                    badgeContent={
+                                                        <Avatar sx={{ width: 20, height: 20, bgcolor: 'background.paper' }}>
+                                                            {getEmailTypeIcon(email.type)}
+                                                        </Avatar>
+                                                    }
+                                                >
                                                     <Avatar
-                                                        sx={{ width: 20, height: 20, bgcolor: 'background.paper' }}
-                                                    >
-                                                        {getEmailTypeIcon(email.type)}
-                                                    </Avatar>
+                                                        src={email.senderAvatar || '/api/placeholder/40/40'}
+                                                        alt={activeTab === 'received' ? email.sender : email.recipient}
+                                                    />
+                                                </Badge>
+                                            </ListItemAvatar>
+                                            <ListItemText
+                                                primary={
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Typography
+                                                            variant="subtitle2"
+                                                            sx={{ fontWeight: email.unread ? 'bold' : 'normal' }}
+                                                        >
+                                                            {activeTab === 'received' ? email.sender : email.recipient}
+                                                        </Typography>
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {new Date(email.date || email.createdAt).toLocaleDateString()}
+                                                        </Typography>
+                                                    </Box>
                                                 }
-                                            >
-                                                <Avatar
-                                                    src={email.senderAvatar || '/api/placeholder/40/40'}
-                                                    alt={activeTab === 'received' ? email.sender : email.recipient}
-                                                />
-                                            </Badge>
-                                        </ListItemAvatar>
-                                        <ListItemText
-                                            primary={
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <Typography
-                                                        variant="subtitle2"
-                                                        sx={{ fontWeight: email.unread ? 'bold' : 'normal' }}
-                                                    >
-                                                        {activeTab === 'received' ? email.sender : email.recipient}
-                                                    </Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        {new Date(email.date).toLocaleDateString()}
-                                                    </Typography>
-                                                </Box>
-                                            }
-                                            secondary={
-                                                <>
-                                                    <Typography
-                                                        variant="body2"
-                                                        sx={{
-                                                            display: 'inline',
-                                                            fontWeight: email.unread ? 'bold' : 'normal'
-                                                        }}
-                                                        color="text.primary"
-                                                    >
-                                                        {email.subject}
-                                                    </Typography>
-                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                                secondary={
+                                                    <>
                                                         <Typography
                                                             variant="body2"
-                                                            color="text.secondary"
                                                             sx={{
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                display: '-webkit-box',
-                                                                WebkitLineClamp: 1,
-                                                                WebkitBoxOrient: 'vertical',
+                                                                display: 'inline',
+                                                                fontWeight: email.unread ? 'bold' : 'normal'
                                                             }}
+                                                            color="text.primary"
                                                         >
-                                                            {email.message}
+                                                            {email.subject}
                                                         </Typography>
-                                                        {email.status && getStatusChip(email.status)}
-                                                    </Box>
-                                                </>
-                                            }
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 0.5 }}>
+                                                            <Typography
+                                                                variant="body2"
+                                                                color="text.secondary"
+                                                                sx={{
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    display: '-webkit-box',
+                                                                    WebkitLineClamp: 1,
+                                                                    WebkitBoxOrient: 'vertical',
+                                                                }}
+                                                            >
+                                                                {email.message}
+                                                            </Typography>
+                                                            {email.status && getStatusChip(email.status)}
+                                                        </Box>
+                                                    </>
+                                                }
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                                        <Pagination
+                                            count={totalPages}
+                                            page={currentPage + 1}
+                                            onChange={handlePageChange}
+                                            color="primary"
+                                            size="small"
                                         />
-                                    </ListItem>
-                                ))}
-                            </List>
+                                    </Box>
+                                )}
+                            </>
                         ) : (
                             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <Typography variant="body1" color="text.secondary">
@@ -632,7 +776,7 @@ const Emails = () => {
                     </Box>
                 </Box>
 
-                {/* Правая панель - содержимое письма */}
+                {/* Right panel - email content */}
                 <Box
                     sx={{
                         flexGrow: 1,
@@ -644,7 +788,7 @@ const Emails = () => {
                 >
                     {selectedEmail ? (
                         <>
-                            {/* Заголовок письма */}
+                            {/* Email header */}
                             <Box sx={{ p: 2, bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                     <IconButton onClick={handleBackToList} sx={{ display: { md: 'none' }, mr: 1 }}>
@@ -668,11 +812,11 @@ const Emails = () => {
                                         />
                                         <Box>
                                             <Typography variant="body2">
-                                                <strong>{activeTab === 'received' ? 'От: ' : 'Кому: '}</strong>
+                                                <strong>{activeTab === 'received' ? 'From: ' : 'To: '}</strong>
                                                 {activeTab === 'received' ? selectedEmail.sender : selectedEmail.recipient}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                                {new Date(selectedEmail.date).toLocaleString()}
+                                                {new Date(selectedEmail.date || selectedEmail.createdAt).toLocaleString()}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -680,7 +824,7 @@ const Emails = () => {
                                         <Tooltip title="Delete">
                                             <IconButton
                                                 color="error"
-                                                onClick={() => handleDelete(selectedEmail.id)}
+                                                onClick={() => deleteEmail(selectedEmail.id)}
                                             >
                                                 <DeleteIcon />
                                             </IconButton>
@@ -689,7 +833,7 @@ const Emails = () => {
                                 </Box>
                             </Box>
 
-                            {/* Содержимое письма */}
+                            {/* Email content */}
                             <Box sx={{ p: 3, flexGrow: 1, overflow: 'auto' }}>
                                 {renderEmailContent(selectedEmail)}
                             </Box>
@@ -787,19 +931,36 @@ const Emails = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField
                                                 margin="dense"
-                                                name="teamName"
+                                                name="team.name"
                                                 label="Team Name"
                                                 fullWidth
                                                 size="small"
+                                                value={composeForm.teamInfo.name}
+                                                onChange={handleComposeChange}
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField
                                                 margin="dense"
-                                                name="teamSport"
+                                                name="team.sport"
                                                 label="Sport"
                                                 fullWidth
                                                 size="small"
+                                                value={composeForm.teamInfo.sport}
+                                                onChange={handleComposeChange}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                margin="dense"
+                                                name="team.players"
+                                                label="Number of Players"
+                                                type="number"
+                                                fullWidth
+                                                size="small"
+                                                value={composeForm.teamInfo.players}
+                                                onChange={handleComposeChange}
+                                                InputProps={{ inputProps: { min: 0 } }}
                                             />
                                         </Grid>
                                     </Grid>
@@ -817,30 +978,49 @@ const Emails = () => {
                                         <Grid item xs={12} md={6}>
                                             <TextField
                                                 margin="dense"
-                                                name="eventName"
+                                                name="event.name"
                                                 label="Event Name"
                                                 fullWidth
                                                 size="small"
+                                                value={composeForm.eventInfo.name}
+                                                onChange={handleComposeChange}
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6}>
                                             <TextField
                                                 margin="dense"
-                                                name="eventDate"
+                                                name="event.date"
                                                 label="Event Date"
                                                 type="datetime-local"
                                                 fullWidth
                                                 size="small"
                                                 InputLabelProps={{ shrink: true }}
+                                                value={composeForm.eventInfo.date}
+                                                onChange={handleComposeChange}
                                             />
                                         </Grid>
-                                        <Grid item xs={12}>
+                                        <Grid item xs={12} md={6}>
                                             <TextField
                                                 margin="dense"
-                                                name="eventLocation"
+                                                name="event.location"
                                                 label="Location"
                                                 fullWidth
                                                 size="small"
+                                                value={composeForm.eventInfo.location}
+                                                onChange={handleComposeChange}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <TextField
+                                                margin="dense"
+                                                name="event.teams"
+                                                label="Number of Teams"
+                                                type="number"
+                                                fullWidth
+                                                size="small"
+                                                value={composeForm.eventInfo.teams}
+                                                onChange={handleComposeChange}
+                                                InputProps={{ inputProps: { min: 0 } }}
                                             />
                                         </Grid>
                                     </Grid>
@@ -854,7 +1034,7 @@ const Emails = () => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={handleComposeSend}
+                        onClick={sendEmail}
                         disabled={!composeForm.recipients || !composeForm.subject || !composeForm.message}
                     >
                         Send
@@ -862,7 +1042,7 @@ const Emails = () => {
                 </DialogActions>
             </Dialog>
 
-            {/* Snackbar для уведомлений */}
+            {/* Snackbar for notifications */}
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={6000}

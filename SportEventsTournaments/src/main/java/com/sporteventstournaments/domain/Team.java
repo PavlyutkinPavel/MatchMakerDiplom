@@ -1,14 +1,11 @@
 package com.sporteventstournaments.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Entity(name = "teams")
@@ -46,4 +43,9 @@ public class Team {
 
     @Column(name = "director_id")
     private Long directorId;
+
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    @JsonManagedReference("email-team")
+    private List<Email> teamInvites;
+
 }

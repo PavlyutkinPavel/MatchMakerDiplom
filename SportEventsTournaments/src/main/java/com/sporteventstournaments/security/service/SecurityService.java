@@ -70,6 +70,8 @@ public class SecurityService {
         return "";
     }
 
+
+
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<String> registration(RegistrationDTO registrationDTO, String siteURL) throws MessagingException, UnsupportedEncodingException {
         //1. parse DTO
@@ -251,6 +253,15 @@ public class SecurityService {
             return credentials.getUserLogin();
         }else{
             return "";
+        }
+    }
+
+    public Long getUserIdByEmail(String email){
+        User user = userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        if (user != null){
+            return user.getId();
+        }else{
+            return 0L;
         }
     }
 

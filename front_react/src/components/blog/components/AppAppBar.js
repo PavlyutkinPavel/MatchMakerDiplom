@@ -16,6 +16,8 @@ import Sitemark from './SitemarkIcon';
 import { Link } from "react-router-dom";
 import AccountMenu from "../../UI/AccountMenu";
 import useApplicationStore from 'store/useApplicationStore';
+import {Fab} from "@mui/material";
+import {Add} from "@mui/icons-material";
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({
     display: 'flex',
@@ -137,7 +139,7 @@ export default function AppAppBar() {
                                 : (<>
                                 </>)
                             }
-                            <Button component={Link} to="/blog" variant="text" color="info" size="small"
+                            {/*<Button component={Link} to="/blog" variant="text" color="info" size="small"
                                     sx={{
                                         px: 2,
                                         py: 1,
@@ -162,7 +164,7 @@ export default function AppAppBar() {
                                     }}
                             >
                                 <strong>Blog</strong>
-                            </Button>
+                            </Button>*/}
                             <Button component={Link} to="/upcoming_events" variant="text" color="info" size="small"
                                     sx={{
                                         px: 2,
@@ -215,32 +217,37 @@ export default function AppAppBar() {
                             >
                                 <strong>Highlights</strong>
                             </Button>
-                            <Button component={Link} to="/pricing" variant="text" color="info" size="small"
-                                    sx={{
-                                        px: 2,
-                                        py: 1,
-                                        mx: 0.5,
-                                        fontWeight: 600,
-                                        position: 'relative',
-                                        transition: 'all 0.3s ease-in-out',
-                                        '&:after': {
-                                            content: '""',
-                                            position: 'absolute',
-                                            bottom: 4,
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            width: 0,
-                                            height: 2,
-                                            bgcolor: 'primary.main',
-                                            transition: 'width 0.3s ease',
-                                        },
-                                        '&:hover:after': {
-                                            width: '60%',
-                                        },
-                                    }}
-                            >
-                                <strong>Pricing</strong>
-                            </Button>
+                            {isAuthenticated
+                                ? (<>
+                                    <Button component={Link} to="/programs" variant="text" color="info" size="small"
+                                            sx={{
+                                                px: 2,
+                                                py: 1,
+                                                mx: 0.5,
+                                                fontWeight: 600,
+                                                position: 'relative',
+                                                transition: 'all 0.3s ease-in-out',
+                                                '&:after': {
+                                                    content: '""',
+                                                    position: 'absolute',
+                                                    bottom: 4,
+                                                    left: '50%',
+                                                    transform: 'translateX(-50%)',
+                                                    width: 0,
+                                                    height: 2,
+                                                    bgcolor: 'primary.main',
+                                                    transition: 'width 0.3s ease',
+                                                },
+                                                '&:hover:after': {
+                                                    width: '60%',
+                                                },
+                                            }}
+                                    >
+                                        <strong>Programs</strong>
+                                    </Button>
+                                </>)
+                                : (<>
+                                </>)}
                             <Button component={Link} to="/faq" variant="text" color="info" size="small"
                                     sx={{
                                         px: 2,

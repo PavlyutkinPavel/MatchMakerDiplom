@@ -1,5 +1,6 @@
 package com.sporteventstournaments.security.controller;
 
+import com.sporteventstournaments.domain.User;
 import com.sporteventstournaments.security.domain.AdminDTO;
 import com.sporteventstournaments.security.domain.AuthRequest;
 import com.sporteventstournaments.security.domain.AuthResponse;
@@ -26,9 +27,11 @@ import java.security.Principal;
 public class SecurityController {
 
     private final SecurityService securityService;
+    private final User user;
 
-    public SecurityController(SecurityService securityService) {
+    public SecurityController(SecurityService securityService, User user) {
         this.securityService = securityService;
+        this.user = user;
     }
 
     /**
@@ -39,10 +42,11 @@ public class SecurityController {
     public ResponseEntity<AuthResponse> generateToken(@RequestBody AuthRequest authRequest){
 
         String token = securityService.generateToken(authRequest);
-        if (token.isBlank()){
-            return new ResponseEntity<>(new AuthResponse("Provided email is not registered. Or wrong password. Please try sign up"),HttpStatus.UNAUTHORIZED);
+        Long userId = securityService.getUserIdByEmail(authRequest.getEmail());
+        if (token.isBlank() || token.isEmpty()){
+            return new ResponseEntity<>(new AuthResponse("Provided email is not registered. Or wrong password. Please try sign up", userId),HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(new AuthResponse(token), HttpStatus.OK);
+        return new ResponseEntity<>(new AuthResponse(token, userId), HttpStatus.OK);
     }
 
     @PostMapping("/registration")

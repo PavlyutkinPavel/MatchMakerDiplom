@@ -27,19 +27,33 @@ import ChatPage from "./components/ChatPage";
 import JoinCreateChat from "./components/JoinCreateChat";
 import {Toaster} from "react-hot-toast";
 import {ChatProvider} from "./context/ChatContext";
+import SubscriptionInfoPage from "./components/mainpage/SubscriptionInfoPage";
+import TrainingProgramsPage from "./components/mainpage/TrainingProgramsPage";
 
 
 function App() {
     const isAuthenticated = useApplicationStore((state) => state.auth.isAuthenticated);
+    const getSelfUserById = useApplicationStore((state) => state.user.getSelfUserById);
+    const user = useApplicationStore((state) => state.user.myAuth);
 
-    useEffect(() => {
-        handleCheck()
+    useEffect(async () => {
+        handleCheck();
+        let userId = sessionStorage.getItem("userId");
+        console.log(userId);
+        if (userId) {
+            await getSelfUserById(userId);
+        }
     }, []);
 
     let handleCheck = () => {
         if (!isAuthenticated) {
             const excludedPaths = ['/signin', '/signup', '/verification', '/verification_rq', '/reset_password', '/faq', '/reviews', '/', ''];
             // if (!!window.location.pathname) {
+            console.log(window.location.pathname);
+            console.log(!!window.location.pathname);
+            // if (window.location.pathname !== '/') {
+            //     window.location.href = '/';
+            // }
             if (!excludedPaths.includes(window.location.pathname)) {
                 window.location.href = '/signin';
             }
@@ -56,6 +70,7 @@ function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/blog" element={<MatchMaker />} />
                     <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/programs" element={<TrainingProgramsPage/>} />
                     <Route path="/upcoming_events" element={<UpComingEvents />} />
                     <Route path="/highlights" element={<HighLightsList />} />
                     <Route path="/signup" element={<SignUp />} />

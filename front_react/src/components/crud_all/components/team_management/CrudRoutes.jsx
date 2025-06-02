@@ -31,8 +31,6 @@ function CrudRoutes({ basePath, entityName, dataSource, dataSourceCache }) {
     const editMatch = matchPath(editPath, router.pathname);
 
     return (
-        <AppTheme>
-            <CssBaseline enableColorScheme />
             <CrudProvider dataSource={dataSource} dataSourceCache={dataSourceCache}>
                 {router.pathname === listPath && (
                     <List onRowClick={handleRowClick} onCreateClick={handleCreateClick} sx={{
@@ -67,7 +65,6 @@ function CrudRoutes({ basePath, entityName, dataSource, dataSourceCache }) {
                     }}/>
                 )}
             </CrudProvider>
-        </AppTheme>
     );
 }
 

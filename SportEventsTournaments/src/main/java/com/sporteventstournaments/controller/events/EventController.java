@@ -68,15 +68,11 @@ public class EventController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (securityService.checkIfAdmin(principal.getName())) {
-            List<Event> events = eventService.getEventsByCreator(userId);
-            if (events.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else {
-                return new ResponseEntity<>(events, HttpStatus.OK);
-            }
+        List<Event> events = eventService.getEventsByCreator(userId);
+        if (events.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(events, HttpStatus.OK);
         }
     }
 

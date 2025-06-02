@@ -35,7 +35,7 @@ import TeamManagementModern from "./TeamManagementModern";
 import {motion} from "framer-motion";
 import Avatar from "@mui/material/Avatar";
 import FriendsList from "./components/FriendList";
-import {TeamEvents} from "./components/TeamEvents";
+import EventsSchedule from "./components/TeamEvents";
 import WebChat from "./components/WebChat";
 import Emails from "./components/Emails";
 import ParticipantsManager from "./components/ParticipantsManager";
@@ -331,11 +331,11 @@ function TeamManagementCrudAdvanced(props) {
                         segment: 'chat', title: 'Chat', icon: <MessageIcon />,
                     },
                     {
-                        segment: 'events', title: 'Team Events', icon: <FitnessCenterIcon />,
+                        segment: 'events', title: 'My Events', icon: <FitnessCenterIcon />,
                     },
-                    {
+                   /* {
                         segment: 'map', title: 'Events Map', icon: <MapIcon />,
-                    },
+                    },*/
                     {
                         kind: 'divider',
                     },
@@ -427,7 +427,7 @@ function TeamManagementCrudAdvanced(props) {
                         </Container>
                     )}
 
-                        {router.pathname === "/map" && (
+                        {/*{router.pathname === "/map" && (
                             <iframe
                                 title="Google Map"
                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d47931.43656890325!2d27.4904518!3d53.9006017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dbcfbc1f7a6bd1%3A0x34ca9fbc765ba123!2sMinsk%2C%20Belarus!5e0!3m2!1sen!2s!4v1633452834502!5m2!1sen!2s"
@@ -435,7 +435,7 @@ function TeamManagementCrudAdvanced(props) {
                                 allowFullScreen
                                 loading="lazy"
                             />
-                        )}
+                        )}*/}
                         {router.pathname === "/planning" && (
                             <CrudRoutes
                                 basePath={routes.planning}
@@ -457,7 +457,7 @@ function TeamManagementCrudAdvanced(props) {
                             <WebChat/>
                         )}
                         {router.pathname === "/events" && (
-                            <TeamEvents/>
+                            <EventsSchedule/>
                         )}
                         {router.pathname === "/emails" && (
                             <Emails/>

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @ControllerAdvice
 @Slf4j
@@ -18,10 +21,33 @@ public class ExceptionResolver {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<Map<String, Object>> handleFileStorageException(FileStorageException ex) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("timestamp", LocalDateTime.now());
+        error.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        error.put("error", "File Storage Error");
+        error.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
     @ExceptionHandler(value = NoTicketsLeftException.class)
     ResponseEntity<HttpStatus> noTicketsLeftException(){
         log.info("NoTicketsLeft exception!!!");
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    ResponseEntity<HttpStatus> RuntimeException(){
+        log.info("RuntimeException exception!!!");
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = UnauthorizedException.class)
+    ResponseEntity<HttpStatus> UnauthorizedException(){
+        log.info("UnauthorizedException exception!!!");
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
 

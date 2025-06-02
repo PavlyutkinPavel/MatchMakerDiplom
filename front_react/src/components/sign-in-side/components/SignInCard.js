@@ -43,6 +43,7 @@ export default function SignInCard() {
     const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
     const [open, setOpen] = React.useState(false);
     const signIn = useApplicationStore((state) => state.auth.signIn);
+    const getSelfUserById = useApplicationStore((state) => state.user.getSelfUserById);
 
     sessionStorage.setItem("needRedirect", "true");
 
@@ -123,10 +124,11 @@ export default function SignInCard() {
             });
 
             if (response.status === 200) {
-                const { token } = await response.json();
-                sessionStorage.setItem("email", authData.email)
+                const { token, userId } = await response.json();
                 sessionStorage.setItem("jwt", token)
+                sessionStorage.setItem("userId", userId)
                 signIn()
+                await getSelfUserById(userId)
                 setAlertMessage("Successful sign in!");
                 setAlertSeverity("success");
                 setAlertOpen(true);

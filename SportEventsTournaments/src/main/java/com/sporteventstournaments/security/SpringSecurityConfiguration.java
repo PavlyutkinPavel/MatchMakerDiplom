@@ -53,6 +53,9 @@ public class SpringSecurityConfiguration {
                         auth
                                 .requestMatchers(HttpMethod.POST, "/registration").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/event").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/rooms").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/highlights-api").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/highlights-api").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/authentication").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/verification").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/verification_rq").permitAll()

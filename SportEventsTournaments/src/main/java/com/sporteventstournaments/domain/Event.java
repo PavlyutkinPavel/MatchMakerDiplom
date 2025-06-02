@@ -1,5 +1,6 @@
 package com.sporteventstournaments.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +8,7 @@ import lombok.Data;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @Schema(description = "Event information")
@@ -44,6 +46,11 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @NotNull
     private SportType sportType;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonManagedReference("email-event")
+    private List<Email> eventInvites;
+
 
     public enum EventType {
         SINGLE, TWO_TEAMS, TABLE, PLAYOFF

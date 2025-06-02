@@ -393,7 +393,7 @@ const HomePage = () => {
                                                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', mr: 3 }}>
                                                         <Event sx={{ mr: 1 }} />
-                                                        <Typography>{featuredEvents[currentEvent].eventDate}</Typography>
+                                                        <Typography>{fromISOToLocal(featuredEvents[currentEvent].eventDate)}</Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                         <LocationOn sx={{ mr: 1 }} />
@@ -405,7 +405,7 @@ const HomePage = () => {
                                                     size="large"
                                                     color="primary"
                                                     endIcon={<ArrowForward />}
-                                                    onClick={() => navigate('/tournament')}
+                                                    onClick={() => navigate('/upcoming_events')}
                                                 >
                                                     Participate
                                                 </CustomButton>
@@ -588,9 +588,9 @@ const HomePage = () => {
                                                 sx={{ mb: 1 }}
                                             />
                                             <Typography gutterBottom variant="h6" component="div"
-                                                sx={{ fontWeight: 'bold' }}>
+                                                        sx={{ fontWeight: 'bold' }}>
                                                 {event.eventName}
-                                            </Typography>j
+                                            </Typography>
                                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                                 <Event fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                                                 <Typography variant="body2" color="text.secondary">
@@ -604,7 +604,7 @@ const HomePage = () => {
                                                 </Typography>
                                             </Box>
                                         </CardContent>
-                                        <Box sx={{ mt: 'auto', p: 2, display: 'flex', justifyContent: 'space-between' }}>
+                                        {/* <Box sx={{ mt: 'auto', p: 2, display: 'flex', justifyContent: 'space-between' }}>
                                             <Button
                                                 size="small"
                                                 color="primary"
@@ -622,7 +622,7 @@ const HomePage = () => {
                                             >
                                                 Participate
                                             </Button>
-                                        </Box>
+                                        </Box> */}
                                     </FeatureCard>
                                 </motion.div>
                             </Grid>

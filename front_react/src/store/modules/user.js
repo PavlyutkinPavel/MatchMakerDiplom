@@ -5,6 +5,7 @@ const user = (set, get) => ({
     list: [],
     current: null,
     error: null,
+    myAuth: null,
 
     // Получить всех пользователей
     fetchAll: async () => {
@@ -113,7 +114,33 @@ const user = (set, get) => ({
         hideLoader('user');
       }
     },
+    //Получить свои данные
+    getSelfUserById: async (id) => {
+      const { showLoader, hideLoader } = get().loader;
+      showLoader({ text: 'Loading user details...' });
 
+      try {
+        const response = await api.get(`/user/${id}`);
+        set({
+          user: {
+            ...get().user,
+            error: null,
+            myAuth: response.data,
+          }
+        });
+        return response.data;
+      } catch (err) {
+        set({
+          user: {
+            ...get().user,
+            error: err.response?.data?.message || err.message
+          }
+        });
+        throw err;
+      } finally {
+        hideLoader();
+      }
+    },
     // Получить пользователя по ID
     getById: async (id) => {
       const { showLoader, hideLoader } = get().loader;
@@ -125,7 +152,7 @@ const user = (set, get) => ({
           user: {
             ...get().user,
             current: response.data,
-            error: null
+            error: null,
           }
         });
         return response.data;

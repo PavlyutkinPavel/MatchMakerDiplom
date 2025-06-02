@@ -4,10 +4,7 @@ import { createTheme } from '@mui/material/styles';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { PageContainer } from '@toolpad/core/PageContainer';
-import EventManagementComponent from "./EventManagementComponent";
 import BasicEventComponent from "./BasicEvents";
-import TwoSideEventComponent from "./TwoSideEvents";
-import TableTournamentEvents from "./TableTournamentEvents";
 import PlayOffTournamentEvents from "./PlayOffTournamentEvents";
 import TwoTeamEventManager from './TwoTeamEventManager';
 
@@ -24,7 +21,8 @@ import Filter2Icon from '@mui/icons-material/Filter2';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import CssBaseline from "@mui/material/CssBaseline";
 import AppTheme from "../../../shared-theme/AppTheme";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import TableEventManager from './TableEventManager';
 
 const routes = {
     basic: "/basic",
@@ -102,9 +100,6 @@ function TournamentEventsManagementCrudAdvanced(props) {
                     {
                         segment: 'table', title: 'Table Tournament', icon: <BackupTableIcon />,
                     },
-                    {
-                        segment: 'playoff', title: 'PlayOff Tournament', icon: <EmojiEventsIcon />, pattern: 'notes{/:noteId}*',
-                    },
                 ]
                 }
                 router={router}
@@ -126,16 +121,13 @@ function TournamentEventsManagementCrudAdvanced(props) {
                 <DashboardLayout>
                     <PageContainer>
                         {router.pathname === "/basic" && (
-                            <BasicEventComponent/>
+                            <BasicEventComponent />
                         )}
                         {router.pathname === "/twoside" && (
-                            <TwoTeamEventManager/>
+                            <TwoTeamEventManager />
                         )}
                         {router.pathname === "/table" && (
-                            <TableTournamentEvents />
-                        )}
-                        {router.pathname === "/playoff" && (
-                            <PlayOffTournamentEvents />
+                            <TableEventManager />
                         )}
                     </PageContainer>
                 </DashboardLayout>

@@ -1,12 +1,10 @@
 const loader = (set) => ({
   loader: {
-    // Глобальный лоадер
     global: {
-      isLoading: false, 
+      isLoading: false,
       text: 'Loading...'
     },
 
-    // Модульные лоадеры
     modules: {
       event: { isLoading: false, text: 'Loading Events...' },
       singleEvent: { isLoading: false, text: 'Loading Basic Events...' },
@@ -19,7 +17,6 @@ const loader = (set) => ({
 
       set(state => {
         if (!moduleName) {
-          // Глобальный лоадер
           return {
             loader: {
               ...state.loader,
@@ -30,7 +27,6 @@ const loader = (set) => ({
             }
           };
         } else {
-          // Модульный лоадер
           return {
             loader: {
               ...state.loader,
@@ -51,7 +47,6 @@ const loader = (set) => ({
     hideLoader: (moduleName) => {
       set(state => {
         if (!moduleName) {
-          // Глобальный лоадер
           return {
             loader: {
               ...state.loader,
@@ -62,7 +57,6 @@ const loader = (set) => ({
             }
           };
         } else {
-          // Модульный лоадер
           return {
             loader: {
               ...state.loader,

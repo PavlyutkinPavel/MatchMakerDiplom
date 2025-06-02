@@ -1,244 +1,347 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
-    CircularProgress,
-    Grid,
-    Paper,
-    Typography,
-    Chip,
     Card,
     CardContent,
-    CardActions,
-    Select,
-    MenuItem,
+    Typography,
     FormControl,
     InputLabel,
+    Select,
+    MenuItem,
+    Chip,
+    Grid,
+    Avatar,
+    Divider,
+    IconButton,
+    Tooltip,
+    CircularProgress,
     Alert,
-    Divider
+    Container,
+    Paper,
+    Stack
 } from '@mui/material';
 import {
-    SportsBasketball,
-    SportsSoccer,
-    SportsTennis,
-    SportsHockey,
-    SportsVolleyball
+    Event as EventIcon,
+    LocationOn as LocationIcon,
+    Group as GroupIcon,
+    Person as PersonIcon,
+    TableChart as TableIcon,
+    Sports as SportsIcon,
+    CalendarToday as CalendarIcon,
+    FilterList as FilterIcon
 } from '@mui/icons-material';
 
+import event from 'store/modules/event';
+import useApplicationStore from "../../../../../store/useApplicationStore";
 
-// Helper function to get sport icon
-const getSportIcon = (sportType) => {
-    switch (sportType) {
-        case 'FOOTBALL':
-            return <SportsSoccer />;
-        case 'BASKETBALL':
-            return <SportsBasketball />;
-        case 'TENNIS':
-            return <SportsTennis />;
-        case 'HOCKEY':
-            return <SportsHockey />;
-        case 'VOLLEYBALL':
-            return <SportsVolleyball />;
-        default:
-            return <SportsSoccer />;
-    }
-};
+const EventsSchedule = () => {
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [filterType, setFilterType] = useState('ALL');
+    const [sortBy, setSortBy] = useState('date');
 
-// Mock API endpoints (you'll replace these with real endpoints)
-const API_URL = "http://localhost:8080";
+    const store = useApplicationStore();
+    const userId = sessionStorage.getItem("userId")
 
-const getHeaders = () => ({
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${sessionStorage.getItem("jwt")}`,
-});
-
-// Mock data for testing
-const mockUserTeams = [
-    { id: 1, teamName: 'FC Barcelona', teamType: 'FOOTBALL', status: 'Active team', country: 'Spain', city: 'Barcelona' },
-    { id: 2, teamName: 'LA Lakers', teamType: 'BASKETBALL', status: 'Active team', country: 'United States', city: 'Los Angeles' },
-    { id: 3, teamName: 'Tennis Club', teamType: 'TENNIS', status: 'Active team', country: 'France', city: 'Paris' }
-];
-
-// Team Events component
-export const TeamEvents = () => {
-    const [events, setEvents] = React.useState([]);
-    const [loading, setLoading] = React.useState(false);
-    const [userTeams, setUserTeams] = React.useState([]);
-    const [selectedTeam, setSelectedTeam] = React.useState('');
-
-    // Mock events data
-    const mockEvents = [
-        {
-            id: 1,
-            title: 'Team Practice',
-            teamId: 1,
-            date: '2023-10-20',
-            time: '14:00',
-            location: 'Main Stadium',
-            description: 'Regular practice session focusing on defensive strategies.',
-            status: 'upcoming'
-        },
-        {
-            id: 2,
-            title: 'Championship Game',
-            teamId: 1,
-            date: '2023-10-25',
-            time: '19:30',
-            location: 'Central Arena',
-            description: 'Final game of the season against main rivals.',
-            status: 'upcoming'
-        },
-        {
-            id: 3,
-            title: 'Team Meeting',
-            teamId: 2,
-            date: '2023-10-18',
-            time: '10:00',
-            location: 'Conference Room',
-            description: 'Season review and planning meeting.',
-            status: 'upcoming'
-        },
-        {
-            id: 4,
-            title: 'Friendly Match',
-            teamId: 3,
-            date: '2023-10-22',
-            time: '16:00',
-            location: 'Tennis Club',
-            description: 'Friendly match with guest players.',
-            status: 'upcoming'
-        }
-    ];
-
-    React.useEffect(() => {
-        // In a real app, fetch user teams from API
-        const fetchUserTeams = async () => {
-            try {
-                // const response = await fetch(`${API_URL}/team/user`, {
-                //   headers: getHeaders(),
-                // });
-                // const data = await response.json();
-                // setUserTeams(data);
-                setUserTeams(mockUserTeams);
-            } catch (error) {
-                console.error('Error fetching user teams:', error);
-                setUserTeams(mockUserTeams); // Fallback to mock data
-            }
-        };
-
-        fetchUserTeams();
+    // Загрузка событий
+    useEffect(() => {
+        fetchEvents();
     }, []);
 
-    React.useEffect(() => {
-        if (selectedTeam) {
-            fetchEvents();
-        }
-    }, [selectedTeam]);
-
     const fetchEvents = async () => {
-        setLoading(true);
         try {
-            // In a real implementation, fetch from API
-            // const response = await fetch(`${API_URL}/team/${selectedTeam}/events`, {
-            //   headers: getHeaders(),
-            // });
-            // const data = await response.json();
-            // setEvents(data);
-
-            // Mock data for testing
-            setTimeout(() => {
-                setEvents(mockEvents.filter(event => event.teamId === parseInt(selectedTeam)));
-                setLoading(false);
-            }, 800);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-            setEvents([]); // Clear on error
+            setLoading(true);
+            setError(null);
+            const response = await store.event.fetchAllByCreator(userId);
+            console.log('Fetched events:', response); // Для отладки
+            setEvents(Array.isArray(response) ? response : []);
+        } catch (err) {
+            setError(err.message || 'Ошибка загрузки событий');
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleTeamChange = (event) => {
-        setSelectedTeam(event.target.value);
+    // Функция для получения цвета чипа по типу события
+    const getEventTypeColor = (eventType) => {
+        const colors = {
+            'TABLE': 'primary',
+            'SINGLE': 'success',
+            'TWO_TEAMS': 'warning'
+        };
+        return colors[eventType] || 'default';
     };
 
+    // Функция для получения иконки по типу события
+    const getEventTypeIcon = (eventType) => {
+        const icons = {
+            'TABLE': <TableIcon />,
+            'SINGLE': <PersonIcon />,
+            'TWO_TEAMS': <GroupIcon />
+        };
+        return icons[eventType] || <EventIcon />;
+    };
+
+    // Функция для форматирования даты
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return {
+            date: date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }),
+            time: date.toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            dayOfWeek: date.toLocaleDateString('ru-RU', { weekday: 'long' })
+        };
+    };
+
+    // Фильтрация и сортировка событий
+    const filteredAndSortedEvents = (events || [])
+        .filter(event => filterType === 'ALL' || event.eventType === filterType)
+        .sort((a, b) => {
+            if (sortBy === 'date') {
+                return new Date(a.eventDate) - new Date(b.eventDate);
+            } else if (sortBy === 'name') {
+                return a.eventName.localeCompare(b.eventName);
+            }
+            return 0;
+        });
+
+
+    // Группировка событий по дате
+    const groupedEvents = filteredAndSortedEvents.reduce((groups, event) => {
+        const dateKey = new Date(event.eventDate).toDateString();
+        if (!groups[dateKey]) {
+            groups[dateKey] = [];
+        }
+        groups[dateKey].push(event);
+        return groups;
+    }, {});
+
+    if (loading) {
+        return (
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                    <CircularProgress size={60} />
+                    <Typography variant="h6" sx={{ ml: 2 }}>
+                        Загрузка событий...
+                    </Typography>
+                </Box>
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            </Container>
+        );
+    }
+
     return (
-        <Box sx={{ padding: 2 }}>
-            <Paper sx={{ padding: 2 }}>
-                <Typography variant="h5" gutterBottom>
-                    Team Events
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+            {/* Заголовок */}
+            <Box mb={4}>
+                <Typography variant="h3" component="h1" gutterBottom sx={{
+                    fontWeight: 'bold',
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                }}>
+                    Расписание событий
                 </Typography>
+                <Typography variant="subtitle1" color="text.secondary">
+                    Просматривайте свои спортивные события
+                </Typography>
+            </Box>
 
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel id="team-select-events-label">Select Team</InputLabel>
-                    <Select
-                        labelId="team-select-events-label"
-                        value={selectedTeam}
-                        label="Select Team"
-                        onChange={handleTeamChange}
-                        startAdornment={userTeams.length > 0 && selectedTeam &&
-                            React.cloneElement(
-                                getSportIcon(userTeams.find(team => team.id === parseInt(selectedTeam))?.teamType || 'FOOTBALL'),
-                                { style: { marginRight: 8 } }
-                            )
-                        }
-                    >
-                        {userTeams.map((team) => (
-                            <MenuItem key={team.id} value={team.id}>
-                                {team.teamName} ({team.teamType})
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                {loading ? (
-                    <Box display="flex" justifyContent="center" p={3}>
-                        <CircularProgress />
+            {/* Фильтры */}
+            <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center">
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <FilterIcon color="primary" />
+                        <Typography variant="h6">Фильтры:</Typography>
                     </Box>
-                ) : !selectedTeam ? (
-                    <Alert severity="info">Please select a team to view its events</Alert>
-                ) : events.length === 0 ? (
-                    <Alert severity="info">No events found for this team</Alert>
-                ) : (
-                    <Grid container spacing={3}>
-                        {events.map((event) => (
-                            <Grid item xs={12} md={6} key={event.id}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6" gutterBottom>
-                                            {event.title}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Date: {event.date}
-                                            </Typography>
-                                            <Typography variant="body2" color="textSecondary">
-                                                Time: {event.time}
-                                            </Typography>
-                                        </Box>
-                                        <Typography variant="body2" sx={{ mb: 1 }}>
-                                            Location: {event.location}
-                                        </Typography>
-                                        <Divider sx={{ my: 1 }} />
-                                        <Typography variant="body2">
-                                            {event.description}
-                                        </Typography>
-                                    </CardContent>
-                                    <CardActions>
-                                        <Chip
-                                            label={event.status === 'upcoming' ? 'Upcoming' : 'Completed'}
-                                            color={event.status === 'upcoming' ? 'primary' : 'default'}
-                                            size="small"
-                                        />
-                                    </CardActions>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Тип события</InputLabel>
+                        <Select
+                            value={filterType}
+                            label="Тип события"
+                            onChange={(e) => setFilterType(e.target.value)}
+                        >
+                            <MenuItem value="ALL">Все события</MenuItem>
+                            <MenuItem value="TABLE">Турнирная таблица</MenuItem>
+                            <MenuItem value="SINGLE">Одиночные</MenuItem>
+                            <MenuItem value="TWO_TEAMS">Две команды</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Сортировка</InputLabel>
+                        <Select
+                            value={sortBy}
+                            label="Сортировка"
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <MenuItem value="date">По дате</MenuItem>
+                            <MenuItem value="name">По названию</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Stack>
             </Paper>
-        </Box>
+
+            {/* События по дням */}
+            {Object.entries(groupedEvents).map(([dateKey, dayEvents]) => {
+                const firstEvent = dayEvents[0];
+                const formattedDate = formatDate(firstEvent.eventDate);
+
+                return (
+                    <Box key={dateKey} mb={4}>
+                        {/* Заголовок дня */}
+                        <Paper
+                            elevation={1}
+                            sx={{
+                                p: 2,
+                                mb: 2,
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                borderRadius: 2
+                            }}
+                        >
+                            <Stack direction="row" alignItems="center" spacing={2}>
+                                <CalendarIcon />
+                                <Box>
+                                    <Typography variant="h5" fontWeight="bold">
+                                        {formattedDate.date}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                        {formattedDate.dayOfWeek}
+                                    </Typography>
+                                </Box>
+                                <Chip
+                                    label={`${dayEvents.length} событий`}
+                                    sx={{
+                                        backgroundColor: 'rgba(255,255,255,0.2)',
+                                        color: 'white'
+                                    }}
+                                />
+                            </Stack>
+                        </Paper>
+
+                        {/* События дня */}
+                        <Grid container spacing={3}>
+                            {dayEvents.map((event) => {
+                                const eventTime = formatDate(event.eventDate);
+
+                                return (
+                                    <Grid item xs={12} md={6} lg={4} key={event.id}>
+                                        <Card
+                                            elevation={3}
+                                            sx={{
+                                                height: '100%',
+                                                borderRadius: 3,
+                                                transition: 'all 0.3s ease',
+                                                '&:hover': {
+                                                    transform: 'translateY(-4px)',
+                                                    boxShadow: '0 12px 24px rgba(0,0,0,0.15)'
+                                                }
+                                            }}
+                                        >
+                                            <CardContent sx={{ p: 3 }}>
+                                                {/* Заголовок события */}
+                                                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                                                    <Typography variant="h6" fontWeight="bold" sx={{ flex: 1 }}>
+                                                        {event.eventName}
+                                                    </Typography>
+                                                    <Avatar sx={{
+                                                        bgcolor: getEventTypeColor(event.eventType) === 'error' ? '#f44336' :
+                                                            getEventTypeColor(event.eventType) === 'primary' ? '#2196f3' :
+                                                                getEventTypeColor(event.eventType) === 'success' ? '#4caf50' : '#ff9800',
+                                                        width: 32,
+                                                        height: 32
+                                                    }}>
+                                                        {getEventTypeIcon(event.eventType)}
+                                                    </Avatar>
+                                                </Stack>
+
+                                                {/* Тип события */}
+                                                <Box mb={2}>
+                                                    <Chip
+                                                        label={event.eventType.replace('_', ' ')}
+                                                        color={getEventTypeColor(event.eventType)}
+                                                        size="small"
+                                                        variant="outlined"
+                                                    />
+                                                </Box>
+
+                                                <Divider sx={{ my: 2 }} />
+
+                                                {/* Детали события */}
+                                                <Stack spacing={1.5}>
+                                                    <Box display="flex" alignItems="center" gap={1}>
+                                                        <EventIcon fontSize="small" color="action" />
+                                                        <Typography variant="body2" fontWeight="medium">
+                                                            {eventTime.time}
+                                                        </Typography>
+                                                    </Box>
+
+                                                    <Box display="flex" alignItems="center" gap={1}>
+                                                        <LocationIcon fontSize="small" color="action" />
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {event.eventLocation}
+                                                        </Typography>
+                                                    </Box>
+
+                                                    <Box display="flex" alignItems="center" gap={1}>
+                                                        <SportsIcon fontSize="small" color="action" />
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {event.sportType}
+                                                        </Typography>
+                                                    </Box>
+                                                </Stack>
+
+                                                {/* Дополнительная информация */}
+                                                <Box mt={2} pt={2} borderTop="1px solid" borderColor="divider">
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Создано: {new Date(event.createdAt).toLocaleDateString('ru-RU')}
+                                                    </Typography>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    </Box>
+                );
+            })}
+
+            {/* Пустое состояние */}
+            {filteredAndSortedEvents.length === 0 && (
+                <Paper elevation={1} sx={{ p: 6, textAlign: 'center', borderRadius: 3 }}>
+                    <EventIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+                    <Typography variant="h5" gutterBottom color="text.secondary">
+                        События не найдены
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        {filterType === 'ALL'
+                            ? 'У вас пока нет запланированных событий'
+                            : `Нет событий типа "${filterType}"`
+                        }
+                    </Typography>
+                </Paper>
+            )}
+        </Container>
     );
 };
 
-export default {
-    TeamEvents
-};
+export default EventsSchedule;

@@ -3,7 +3,8 @@ import { httpClient } from "../config/AxiosHelper";
 export const createRoomApi = async (roomDetail) => {
   const respone = await httpClient.post(`/rooms`, roomDetail, {
     headers: {
-      "Content-Type": "text/plain",
+      'Content-Type': 'text/plain',
+      'Authorization': `Bearer ${sessionStorage.getItem('jwt')}`
     },
   });
   return respone.data;

@@ -4,6 +4,7 @@ import com.sporteventstournaments.domain.Team;
 import com.sporteventstournaments.domain.User;
 import com.sporteventstournaments.domain.UserTeamRelation;
 import com.sporteventstournaments.domain.dto.TeamDTO;
+import com.sporteventstournaments.domain.dto.TeamResponseDTO;
 import com.sporteventstournaments.security.service.SecurityService;
 import com.sporteventstournaments.service.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/team")
 @AllArgsConstructor
+@Slf4j
 public class TeamController {
     private final TeamService teamService;
     private final SecurityService securityService;
@@ -59,6 +62,21 @@ public class TeamController {
             return new ResponseEntity<>(teams, HttpStatus.OK);
         }
     }
+
+    @Operation(summary = "Get my Teams (for authenticated user)")
+    @GetMapping("/my")
+    public ResponseEntity<List<TeamResponseDTO>> getMyTeams(Principal principal) {
+        if (principal == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        List<TeamResponseDTO> teams = teamService.getMyTeams(principal);
+        if (teams.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(teams, HttpStatus.OK);
+        }
+    }
+
 
     @Operation(summary = "get Team (for all)")
     @GetMapping("/{id}")
@@ -106,6 +124,7 @@ public class TeamController {
 
     @GetMapping("/members")
     public ResponseEntity<List<UserTeamRelation>> getTeamMembers() {
+        log.info("getTeamMembers");
         List<UserTeamRelation> userTeamRelations = teamService.getTeamMembers();
         if (userTeamRelations.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -136,6 +155,7 @@ public class TeamController {
 
     @PostMapping("/member")
     public ResponseEntity<HttpStatus> createTeamMember(@RequestBody UserTeamRelationDTO userTeamRelationDTO, Principal principal) {
+        log.info("createTeamMember");
         if(principal == null){
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
@@ -145,6 +165,7 @@ public class TeamController {
     @DeleteMapping("/{teamId}/members/{userId}")
     public ResponseEntity<HttpStatus> deleteTeamMember(@PathVariable Long teamId,
                                                        @PathVariable Long userId, Principal principal) {
+        log.info("deleteTeamMember");
         if(principal == null){
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }

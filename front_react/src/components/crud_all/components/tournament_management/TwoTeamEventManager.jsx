@@ -15,6 +15,7 @@ import useApplicationStore from 'store/useApplicationStore';
 import { toISOString, fromISOToLocal } from 'helpers/dateUtils';
 import AppTheme from 'components/shared-theme/AppTheme';
 import { Snackbar, Alert } from '@mui/material';
+import { ImageListItem } from '../../../../../node_modules/@mui/material/index';
 
 const EventCard = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(3),
@@ -59,6 +60,8 @@ export default function TwoTeamEventManager() {
     const [editingScores, setEditingScores] = useState(false);
     const [tempTeam1Score, setTempTeam1Score] = useState(0);
     const [tempTeam2Score, setTempTeam2Score] = useState(0);
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [eventName, setEventName] = useState('');
     const [eventDate, setEventDate] = useState('');
@@ -67,6 +70,7 @@ export default function TwoTeamEventManager() {
     const [team1Id, setTeam1Id] = useState('');
     const [team2Id, setTeam2Id] = useState('');
     const [status, setStatus] = useState('PENDING');
+    const user = useApplicationStore((state) => state.user.myAuth);
 
     useEffect(() => {
         const loadData = async () => {
@@ -97,6 +101,12 @@ export default function TwoTeamEventManager() {
             setTempTeam2Score(selectedEvent.team2Score || 0);
         }
     }, [selectedEvent]);
+
+    const filteredEvents = events.filter(event => {
+        const matchesStatus = statusFilter === 'ALL' || event.status === statusFilter;
+        const matchesSearch = event.event.eventName.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
 
     const loadEvents = async () => {
         try {
@@ -285,9 +295,33 @@ export default function TwoTeamEventManager() {
 
                 {tabValue === 0 && (
                     <Box>
-                        <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Groups color="primary" /> Two-Team Events
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Groups color="primary" /> Two-Team Events
+                            </Typography>
+
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <TextField
+                                    label="Search Events"
+                                    size="small"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                                    <InputLabel>Status</InputLabel>
+                                    <Select
+                                        value={statusFilter}
+                                        onChange={(e) => setStatusFilter(e.target.value)}
+                                        label="Status"
+                                    >
+                                        <MenuItem value="ALL">All Statuses</MenuItem>
+                                        {STATUS_OPTIONS.map(option => (
+                                            <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                        </Box>
 
                         <TableContainer component={Paper}>
                             <Table>
@@ -303,7 +337,7 @@ export default function TwoTeamEventManager() {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {events.map((event) => (
+                                    {filteredEvents.map((event) => (
                                         <TableRow key={event.id} hover>
                                             <TableCell>{event.event.eventName}</TableCell>
                                             <TableCell>{fromISOToLocal(event.event.eventDate)}</TableCell>
